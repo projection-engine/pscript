@@ -1,0 +1,21 @@
+{
+  "name": "pscript",
+  "version": "0.0.1-alpha",
+  "main": "build/index.js",
+  "scripts": {
+    "dev": "node esbuild watch"
+  },
+  "keywords": [],
+  "author": "facobackup",
+  "devDependencies": {
+    "live-server": "1.2.2",
+    "@tsconfig/svelte": "5.0.0",
+    "@types/node": "20.4.5",
+    "esbuild": "0.18.17",
+    "esbuild-plugin-copy": "2.1.1",
+    "esbuild-svelte": "0.7.4",
+    "svelte": "4.1.1",
+    "svelte-preprocess": "5.0.4",
+    "typescript": "5.1.6"
+  }
+}
