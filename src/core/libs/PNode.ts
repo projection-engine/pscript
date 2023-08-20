@@ -7,22 +7,13 @@ import DraggableNodeUtils from "./DraggableNodeUtils"
 import CanvasResources from "./CanvasResources"
 
 export default class PNode extends AbstractPDraggable {
-    static signature = "PNode"
-
-    getSignature(): string {
-        return PNode.signature
-    }
-
     minWidth = 150
-    uniform = false
     targetCommentID: string | undefined
-    uniformName: string
     output: Output[] = []
     inputs: Input[] = []
 
-    constructor(x: number, y: number, label: string, colorRGBA: [number, number, number, number]) {
-        super(x, y, label, colorRGBA)
-        this.uniformName = "DYNAMIC_" + this.id.replaceAll("-", "_")
+    constructor(canvas: PScriptCanvas, x: number, y: number, label: string, colorRGBA: [number, number, number, number]) {
+        super(canvas, x, y, label, colorRGBA)
         const q = Math.max(
             this.output.length,
             this.inputs.length
@@ -47,8 +38,9 @@ export default class PNode extends AbstractPDraggable {
         }
     }
 
-    drawToCanvas(ctx: CanvasRenderingContext2D, canvasAPI: PScriptCanvas) {
-        CanvasRenderer.drawRoundedRect(ctx, this, 3, canvasAPI.selectionMap.get(this.id) !== undefined, canvasAPI.lastSelection === this, CanvasResources.rectColor)
+    drawToCanvas() {
+        const ctx = this.__canvas.ctx
+        CanvasRenderer.drawRoundedRect(ctx, this, 3, this.__canvas.selectionMap.get(this.id) !== undefined, this.__canvas.lastSelection === this, CanvasResources.rectColor)
         CanvasRenderer.drawNodeHeader(ctx, this)
 
         for (let j = 0; j < this.output.length; j++) {
@@ -60,6 +52,6 @@ export default class PNode extends AbstractPDraggable {
             const C = this.inputs[j]
             CanvasRenderer.drawIO(ctx, false, this, j, C)
         }
-        this.drawScale(ctx)
+        this.drawScale()
     }
 }

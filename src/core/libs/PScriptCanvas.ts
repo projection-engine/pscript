@@ -20,6 +20,7 @@ export default class PScriptCanvas {
     selectionMap = new Map<string, AbstractPDraggable>()
     #lastSelection: AbstractPDraggable | undefined
     #frame: number;
+    observer: ResizeObserver
 
     constructor(id: UUID) {
         this.#id = id
@@ -32,10 +33,16 @@ export default class PScriptCanvas {
         this.#initialized = true
         this.canvas = canvas
         this.ctx = canvas.getContext("2d")
-        this.canvas.width = CanvasResources.width
-        this.canvas.height = CanvasResources.height
-        this.canvas.style.width = CanvasResources.width + "px"
-        this.canvas.style.height = CanvasResources.height + "px"
+
+        this.observer = new ResizeObserver(() => {
+            const bBox = canvas.parentElement.getBoundingClientRect()
+            canvas.width = bBox.width
+            canvas.height = bBox.height
+            canvas.style.width = bBox.width + "px"
+            canvas.style.height = bBox.height + "px"
+        })
+        this.observer.observe(canvas.parentElement)
+
         canvas.addEventListener("contextmenu", e => e.preventDefault())
         canvas.addEventListener("mousedown", PScriptUtil.getMousedownEvent(this))
         canvas.addEventListener("wheel", PScriptUtil.getCanvasZoomEvent(this), {passive: false})
@@ -149,7 +156,7 @@ export default class PScriptCanvas {
             const comment = comments[i]
             if (comment.isOnDrag)
                 CanvasRenderer.drawNodePosition(ctx, comment)
-            comment.drawToCanvas(ctx, this)
+            comment.drawToCanvas()
         }
 
         for (let i = 0; i < links.length; i++) {
@@ -160,7 +167,7 @@ export default class PScriptCanvas {
             const node = nodes[i]
             if (node.isOnDrag)
                 CanvasRenderer.drawNodePosition(ctx, node)
-            node.drawToCanvas(ctx, this)
+            node.drawToCanvas()
         }
     }
 }

@@ -16,13 +16,20 @@
         const y = e.clientY - rect.top;
 
         if (data === "COMMENT")
-            canvas.addNode(new PComment(x, y, "New comment", [0, 255, 0, 1]))
+            canvas.addNode(new PComment(canvas, x, y, "New comment", [0, 255, 0, 1]))
         else
-            canvas.addNode(new PNode(x, y, "New node", [0, 149, 157, 1]))
+            canvas.addNode(new PNode(canvas, x, y, "New node", [0, 149, 157, 1]))
     }
 </script>
-<div on:drop={onDrop}>
+<div on:drop={onDrop} class="wrapper">
     <PScript scriptCanvas={canvas}/>
 </div>
 <SideBar allNodes={[{label: "Comment", dataTransfer: "COMMENT"}, {label: "add", dataTransfer: "cafe"}]}
          scriptCanvas={canvas}/>
+
+<style>
+    .wrapper{
+        height: 100%;
+        width: 100%;
+    }
+</style>

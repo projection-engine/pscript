@@ -5,14 +5,15 @@ import AbstractPDraggable from "./AbstractPDraggable"
 
 
 export default class PComment extends AbstractPDraggable {
-	constructor(x: number, y: number, label: string, colorRGBA: [number, number, number, number]) {
-		super(x, y, label, colorRGBA)
-		this.height = 200
-	}
+    constructor(canvas: PScriptCanvas, x: number, y: number, label: string, colorRGBA: [number, number, number, number]) {
+        super(canvas, x, y, label, colorRGBA)
+        this.height = 200
+    }
 
-	drawToCanvas(ctx: CanvasRenderingContext2D, canvasAPI: PScriptCanvas) {
-		CanvasRenderer.drawRoundedRect(ctx, this, 3, canvasAPI.selectionMap.get(this.id) !== undefined, canvasAPI.lastSelection === this, `rgba(${[this.colorRGBA[0], this.colorRGBA[1], this.colorRGBA[2], .5]})`)
-		CanvasRenderer.drawNodeHeader(ctx, this)
-		this.drawScale(ctx)
-	}
+    drawToCanvas() {
+        const ctx = this.__canvas.ctx
+        CanvasRenderer.drawRoundedRect(ctx, this, 3, this.__canvas.selectionMap.get(this.id) !== undefined, this.__canvas.lastSelection === this, `rgba(${[this.colorRGBA[0], this.colorRGBA[1], this.colorRGBA[2], .5]})`)
+        CanvasRenderer.drawNodeHeader(ctx, this)
+        this.drawScale()
+    }
 }

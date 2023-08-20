@@ -52,7 +52,6 @@ export default class ShaderEditorTools {
     static serializeNode(n: PNode) {
         return {
             ...n,
-            instance: n.getSignature(),
             // texture: n.texture && typeof n.texture === "object" ? {registryID: n.texture.registryID} : undefined,
             DATA_TYPE: "node"
         }

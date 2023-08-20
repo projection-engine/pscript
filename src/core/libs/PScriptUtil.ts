@@ -37,7 +37,7 @@ export default class PScriptUtil {
         smallestX -= 4
         smallestY -= 36
 
-        const comment = new PComment(Math.max(smallestX, 0), Math.max(smallestY, 0), "New Comment", [155, 155, 155, 1])
+        const comment = new PComment(canvasAPI, Math.max(smallestX, 0), Math.max(smallestY, 0), "New Comment", [155, 155, 155, 1])
         comment.width = 8 + (biggestX - smallestX)
         comment.height = 40 + (biggestY - smallestY)
         canvasAPI.addNode(comment)
@@ -86,19 +86,25 @@ export default class PScriptUtil {
     }
 
     static getMousedownEvent(canvasAPI: PScriptCanvas): (this: HTMLCanvasElement, ev: WheelEvent) => void {
-        const nodesOnDrag: { onMouseUp: Function, onMouseMove: Function, node: AbstractPDraggable }[] = []
+        const nodesOnDrag: { onMouseMove: Function, node: AbstractPDraggable }[] = []
         const IO: { node: PNode | undefined, output: Output | undefined } = {node: undefined, output: undefined}
         const parentElement = canvasAPI.canvas.parentElement
         const tempLink = {x: 0, y: 0, x1: 0, y1: 0}
         let isOnScroll = false
         let parentBBox: MutableObject
         const initialClick = {x: 0, y: 0}
-
-
+        const STATE = PScriptRendererState.getState(canvasAPI.getId())
+        let totalScrolledX = STATE.offsetX
+        let totalScrolledY = STATE.offsetY
         const handleMouseMove = (event) => {
             if (isOnScroll) {
-                parentElement.scrollTop -= event.movementY
-                parentElement.scrollLeft -= event.movementX
+                totalScrolledY += event.movementY
+                totalScrolledX += event.movementX
+
+                STATE.offsetY = Math.round(totalScrolledY / CanvasResources.grid) * CanvasResources.grid
+                STATE.offsetX = Math.round(totalScrolledX / CanvasResources.grid) * CanvasResources.grid
+
+                STATE.needsUpdate = true
             } else {
                 const S = nodesOnDrag.length
                 if (IO.node !== undefined)
@@ -134,7 +140,6 @@ export default class PScriptUtil {
 
                 for (let i = 0; i < nodesOnDrag.length; i++) {
                     nodesOnDrag[i].node.isOnDrag = false
-                    nodesOnDrag[i].onMouseUp()
                 }
                 nodesOnDrag.length = 0
                 document.removeEventListener("mousemove", handleMouseMove)
@@ -171,8 +176,6 @@ export default class PScriptUtil {
     }
 
     static onMouseDownEvent(BBox, IO, tempLink, nodesOnDrag, canvasAPI: PScriptCanvas, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
-        console.log("ON MOUSE DOWN")
-
         const {nodes, links} = PScriptRendererState.getState(canvasAPI.getId())
         const X = (event.clientX - BBox.x) / CanvasResources.scale
         const Y = (event.clientY - BBox.y) / CanvasResources.scale

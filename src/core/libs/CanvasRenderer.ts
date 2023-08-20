@@ -8,6 +8,7 @@ import DraggableNodeUtils from "./DraggableNodeUtils"
 import CanvasResources from "./CanvasResources"
 import {MaterialDataTypes} from "../pscript.enum";
 import AbstractPDraggable from "./AbstractPDraggable";
+import PScriptCanvas from "./PScriptCanvas";
 
 const INVERSE_MATERIAL_RENDERING_TYPES = {
     0: "Unlit",
@@ -120,22 +121,25 @@ export default class CanvasRenderer {
 
     static drawNodePosition(ctx: CanvasRenderingContext2D, node: AbstractPDraggable) {
         ctx.font = "10px Roboto"
-
-        const TEXT = `X ${node.x} Y ${node.y} W ${node.width} H ${node.height}`
-        let Y = node.y - 10
+        const coord = node.getTransformedCoordinates()
+        const TEXT = `X ${coord.x} Y ${coord.y} W ${node.width} H ${node.height}`
+        let Y = coord.y - 10
         if (Y < 0)
-            Y = node.y + node.height + 10
+            Y = coord.y + node.height + 10
         ctx.beginPath()
         ctx.fillStyle = "white"
-        ctx.fillText(TEXT, node.x, Y)
+        ctx.fillText(TEXT, coord.x, Y)
 
     }
 
     static drawLink(ctx: CanvasRenderingContext2D, link: PLink) {
+
         const T = link.targetNode, S = link.sourceNode
-        const x1 = S.x + S.width, x2 = T.x,
-            y1 = S.y + HEADER_HEIGHT + IO_RADIUS * 3 + S.output.indexOf(link.sourceRef) * 20,
-            y2 = T.y + HEADER_HEIGHT + IO_RADIUS * 3 + T.inputs.indexOf(link.targetRef) * 20
+        const coordS = S.getTransformedCoordinates()
+        const coordT = T.getTransformedCoordinates()
+        const x1 = coordS.x + S.width, x2 = coordT.x,
+            y1 = coordS.y + HEADER_HEIGHT + IO_RADIUS * 3 + S.output.indexOf(link.sourceRef) * 20,
+            y2 = coordT.y + HEADER_HEIGHT + IO_RADIUS * 3 + T.inputs.indexOf(link.targetRef) * 20
 
         const isSomeoneDisabled = link.sourceRef.disabled || link.targetRef.disabled
         ctx.strokeStyle = DraggableNodeUtils.getIOColor(link.sourceRef, isSomeoneDisabled)
@@ -143,7 +147,7 @@ export default class CanvasRenderer {
         CanvasRenderer.drawBezierCurve(ctx, x1, x2, y1, y2)
     }
 
-    static drawTempLink(event: MouseEvent, parentElement, parentBBox, tempLink, canvasAPI) {
+    static drawTempLink(event: MouseEvent, parentElement, parentBBox, tempLink, canvasAPI: PScriptCanvas) {
         tempLink.x1 = (event.clientX - parentBBox.x + parentElement.scrollLeft) / CanvasResources.scale
         tempLink.y1 = (event.clientY - parentBBox.y + parentElement.scrollTop) / CanvasResources.scale
 
@@ -155,31 +159,28 @@ export default class CanvasRenderer {
     static drawNodeHeader(ctx: CanvasRenderingContext2D, node: AbstractPDraggable) {
         const name = node.label
         const color = node.colorRGBA
+        const coord = node.getTransformedCoordinates()
+
         ctx.beginPath()
         const fontFill = "#f0f0f0"
         ctx.fillStyle = `rgb(${color})`
         ctx.strokeStyle = CanvasResources.borderColor
         ctx.lineWidth = .5
-        ctx.roundRect(node.x, node.y, node.width, 23, [3, 3, 0, 0])
+        ctx.roundRect(coord.x, coord.y, node.width, 23, [3, 3, 0, 0])
         ctx.stroke()
         ctx.fill()
 
         ctx.font = "10px Roboto"
 
         ctx.fillStyle = fontFill
-        ctx.fillText(name, node.x + IO_RADIUS, node.y + 15)
-        if ((node as PNode).uniform) {
-            const length = ctx.measureText(name + "T").width
-            ctx.font = "6px Roboto"
-            ctx.fillStyle = "#999"
-            ctx.fillText("(DYNAMIC)", node.x + length, node.y + 15)
-        }
+        ctx.fillText(name, coord.x + IO_RADIUS, coord.y + 15)
         ctx.closePath()
 
     }
 
-    static drawRoundedRect(ctx: CanvasRenderingContext2D, node: PNode | PComment, r: number, isSelected: boolean, isFirstSelected: boolean, color: string) {
-        const w = node.width, h = node.height, x = node.x, y = node.y
+    static drawRoundedRect(ctx: CanvasRenderingContext2D, node: AbstractPDraggable, r: number, isSelected: boolean, isFirstSelected: boolean, color: string) {
+        const coord = node.getTransformedCoordinates()
+        const w = node.width, h = node.height, x = coord.x, y = coord.y
         if (w < 2 * r) r = w / 2
         if (h < 2 * r) r = h / 2
         let outlineColor = CanvasResources.borderColor

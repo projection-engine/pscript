@@ -13,7 +13,9 @@ export default class PScriptRendererState {
         nodes: AbstractPDraggable[],
         comments: PComment[],
         needsUpdate: boolean,
-        getInstance: () => PScriptCanvas
+        getInstance: () => PScriptCanvas,
+        offsetX: number,
+        offsetY: number
     }>()
 
     static getState(id: UUID) {
@@ -22,15 +24,26 @@ export default class PScriptRendererState {
 
     static createState(id: UUID) {
         const instance = new PScriptCanvas(id)
-        this.#state.set(id, {getId: () => id, links: [], nodes: [], comments: [], needsUpdate: false, getInstance: () => instance})
+        this.#state.set(id, {
+            offsetX: 0,
+            offsetY: 0,
+            getId: () => id,
+            links: [],
+            nodes: [],
+            comments: [],
+            needsUpdate: false,
+            getInstance: () => instance
+        })
         return instance
     }
 
-    static destroyState(id: UUID){
-        if(!this.#state.has(id))
+    static destroyState(id: UUID) {
+        if (!this.#state.has(id))
             return
         const state = this.#state.get(id)
         state.getInstance().stop()
+        state.getInstance().observer.disconnect()
+
 
         this.#state.delete(id)
     }
