@@ -1,19 +1,19 @@
 <script lang="ts">
     import Attribute from "./Attribute.svelte";
 
-    import type PNode from "../libs/PNode";
-    import PComment from "../libs/PComment";
+    import type NodeDraggable from "../instances/NodeDraggable";
+    import CommentDraggable from "../instances/CommentDraggable";
     import LocalizationEN from "../resources/LocalizationEN";
     import Input from "../../components/input/Input.svelte";
     import ColorPicker from "../../components/color-picker/ColorPicker.svelte";
 
-    export let node: PNode | PComment
+    export let node: NodeDraggable | CommentDraggable
     export let updateCanvas: Function
 
 
     function handleNodeChange(value: any, attr: MutableObject) {
         node[attr.key] = value
-        const input = (node as PNode).inputs.find(i => i.key === attr.key)
+        const input = (node as NodeDraggable).inputs.find(i => i.key === attr.key)
         input.onChange?.(value)
         updateCanvas()
     }
@@ -35,7 +35,7 @@
                         placeholder={LocalizationEN.NAME}
                 />
             </fieldset>
-            {#if node instanceof PComment}
+            {#if node instanceof CommentDraggable}
                 <fieldset>
                     <legend>{LocalizationEN.COLOR}</legend>
                     <ColorPicker

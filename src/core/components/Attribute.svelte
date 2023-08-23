@@ -1,6 +1,6 @@
 <script lang="ts">
     import {MaterialDataTypes} from "../pscript.enum";
-    import ShaderEditorUtil from "../libs/PScriptUtil";
+    import ShaderEditorUtil from "../util/PScriptUtil";
     import Range from "../../components/range/Range.svelte";
     import ColorPicker from "../../components/color-picker/ColorPicker.svelte";
     import Dropdown from "../../components/dropdown/Dropdown.svelte";

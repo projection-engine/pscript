@@ -2,8 +2,9 @@
     import LocalizationEN from "../resources/LocalizationEN";
     import Input from "../../components/input/Input.svelte";
     import Icon from "../../components/icon/Icon.svelte";
+    import AbstractDraggable from "../instances/AbstractDraggable";
 
-    export let allNodes: {label: string, dataTransfer: string}[] = []
+    export let allNodes:{ label: string, class: string }[] = []
     let inputValue = ""
     let nodes
     $: nodes = !inputValue ? allNodes : allNodes.filter(i => i.label.toLowerCase().includes(inputValue.toLowerCase()))
@@ -15,7 +16,7 @@
             <div
                     class="option-available-nodes selector"
                     draggable="true"
-                    on:dragstart={e => e.dataTransfer.setData("text", d.dataTransfer)}
+                    on:dragstart={e => e.dataTransfer.setData("text", d.class)}
             >
                 <Icon>drag_indicator</Icon>
                 {d.label}

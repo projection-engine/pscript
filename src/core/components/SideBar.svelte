@@ -2,19 +2,20 @@
 
     import Nodes from "./Nodes.svelte";
     import AttributeEditor from "./AttributeEditor.svelte";
-    import type PScriptCanvas from "../libs/PScriptCanvas";
-    import type PNode from "../libs/PNode";
-    import PComment from "../libs/PComment";
+    import type RenderEngine from "../instances/RenderEngine";
+    import type NodeDraggable from "../instances/NodeDraggable";
+    import CommentDraggable from "../instances/CommentDraggable";
     import {onDestroy, onMount} from "svelte";
     import LocalizationEN from "../resources/LocalizationEN";
     import Icon from "../../components/icon/Icon.svelte";
     import ResizableBar from "../../components/resizable/ResizableBar.svelte";
+    import AbstractDraggable from "../instances/AbstractDraggable";
 
-    export let allNodes: { label: string, dataTransfer: string }[]
-    export let scriptCanvas: PScriptCanvas
+    export let allNodes:{ label: string, class: string }[]
+    export let scriptCanvas: RenderEngine
 
     let tab = 0
-    let mainNode: PNode | PComment | undefined
+    let mainNode: NodeDraggable | CommentDraggable | undefined
 
     onMount(() => {
         scriptCanvas.lastSelectionListener = () => mainNode = scriptCanvas.lastSelection

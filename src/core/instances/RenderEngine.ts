@@ -1,30 +1,35 @@
-import CanvasRenderer from "./CanvasRenderer"
-import type PNode from "./PNode"
-import CanvasResources from "./CanvasResources"
-import type PLink from "./PLink"
-import type PComment from "./PComment"
-import ShaderEditorActionHistory from "./ShaderEditorActionHistory"
-import PScriptUtil from "./PScriptUtil";
-import DynamicMap from "./DynamicMap";
+import RendererUtil from "../util/RendererUtil"
+import NodeDraggable from "./NodeDraggable"
+import CanvasResources from "../libs/CanvasResources"
+import type Link from "./Link"
+import CommentDraggable from "./CommentDraggable"
+import ActionHistory from "../libs/ActionHistory"
+import PScriptUtil from "../util/PScriptUtil";
+import DynamicMap from "../libs/DynamicMap";
 import {UUID} from "crypto";
-import PScriptRendererState from "./PScriptRendererState";
-import AbstractPDraggable from "./AbstractPDraggable";
+import PScriptRendererState from "../libs/PScriptRendererState";
+import AbstractDraggable from "./AbstractDraggable";
 
-export default class PScriptCanvas {
+export default class RenderEngine implements IRenderEngine {
     #id: UUID
     #initialized = false
-    history = new ShaderEditorActionHistory()
+    history = new ActionHistory()
     ctx?: CanvasRenderingContext2D
     canvas?: HTMLCanvasElement
     lastSelectionListener?: Function
-    selectionMap = new Map<string, AbstractPDraggable>()
-    #lastSelection: AbstractPDraggable | undefined
+    selectionMap = new Map<string, AbstractDraggable>()
+    #lastSelection: AbstractDraggable | undefined
     #frame: number;
-    observer: ResizeObserver
+    observer
+    #state: RendererState<RenderEngine>
 
     constructor(id: UUID) {
         this.#id = id
         this.history.canvas = this
+    }
+
+    getState(){
+        return this.#state ?? (this.#state = PScriptRendererState.getState(this.getId()))
     }
 
     initialize(canvas: HTMLCanvasElement) {
@@ -82,9 +87,9 @@ export default class PScriptCanvas {
         return PScriptRendererState.getState(this.getId())
     }
 
-    addLink(link: PLink, noUpdate?: boolean) {
+    addLink(link: Link, noUpdate?: boolean) {
         const STATE = this.#getState()
-        const foundExisting = STATE.links.findIndex(l => l.targetRef === link.targetRef)
+        const foundExisting = STATE.links.findIndex(l => l.input === link.input)
         if (foundExisting > -1)
             STATE.links[foundExisting] = link
         else
@@ -103,16 +108,16 @@ export default class PScriptCanvas {
         return this.#lastSelection
     }
 
-    set lastSelection(data: AbstractPDraggable | undefined) {
+    set lastSelection(data: AbstractDraggable | undefined) {
         this.#lastSelection = data
         this.lastSelectionListener?.()
     }
 
-    addNode(node: AbstractPDraggable, noSerialization?: boolean, noUpdate?: boolean) {
-        if (!noSerialization) {
-            this.history.save([node], true)
-            this.history.save([node])
-        }
+    addNode(node: AbstractDraggable, noSerialization?: boolean, noUpdate?: boolean) {
+        // if (!noSerialization) {
+        //     this.history.save([node], true)
+        //     this.history.save([node])
+        // }
         const STATE = this.#getState()
         STATE.nodes.push(node)
         if (!noUpdate)
@@ -121,11 +126,11 @@ export default class PScriptCanvas {
 
     removeNodes(toRemove: string[], noSerialization?: boolean) {
         const STATE = this.#getState()
-        if (!noSerialization) {
-            const mapped = STATE.nodes.filter(e => toRemove.includes(e.id))
-            this.history.save(mapped)
-            this.history.save(mapped, true)
-        }
+        // if (!noSerialization) {
+        //     const mapped = STATE.nodes.filter(e => toRemove.includes(e.id))
+        //     this.history.save(mapped)
+        //     this.history.save(mapped, true)
+        // }
         for (let i = 0; i < toRemove.length; i++) {
             const id = toRemove[i];
             const index = STATE.nodes.findIndex(n => n.id === id)
@@ -148,26 +153,28 @@ export default class PScriptCanvas {
     #draw() {
         const ctx = this.ctx
         const STATE = this.#getState()
-        const comments = STATE.comments
         const links = STATE.links
         const nodes = STATE.nodes
-
-        for (let i = 0; i < comments.length; i++) {
-            const comment = comments[i]
-            if (comment.isOnDrag)
-                CanvasRenderer.drawNodePosition(ctx, comment)
-            comment.drawToCanvas()
+        for (let i = 0; i < nodes.length; i++) {
+            const iDraggable = nodes[i]
+            if (iDraggable instanceof CommentDraggable) {
+                if (iDraggable.isOnDrag)
+                    RendererUtil.drawNodePosition(ctx, iDraggable)
+                iDraggable.drawToCanvas()
+            }
         }
 
         for (let i = 0; i < links.length; i++) {
-            CanvasRenderer.drawLink(ctx, links[i])
+            RendererUtil.drawLink(ctx, <Link>links[i])
         }
 
         for (let i = 0; i < nodes.length; i++) {
-            const node = nodes[i]
-            if (node.isOnDrag)
-                CanvasRenderer.drawNodePosition(ctx, node)
-            node.drawToCanvas()
+            const iDraggable = nodes[i]
+            if (iDraggable instanceof NodeDraggable) {
+                if (iDraggable.isOnDrag)
+                    RendererUtil.drawNodePosition(ctx, iDraggable)
+                iDraggable.drawToCanvas()
+            }
         }
     }
 }

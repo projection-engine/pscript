@@ -1,10 +1,10 @@
 import IO_RADIUS from "../resources/IO_RADIUS"
 import HEADER_HEIGHT from "../resources/HEADER_HEIGHT"
-import type AbstractPDraggable from "./AbstractPDraggable"
-import type PNode from "./PNode"
-import CanvasResources from "./CanvasResources"
+import type AbstractDraggable from "../instances/AbstractDraggable"
+import type NodeDraggable from "../instances/NodeDraggable"
+import CanvasResources from "../libs/CanvasResources"
 import {MaterialDataTypes} from "../pscript.enum";
-import PScriptRendererState from "./PScriptRendererState";
+import PScriptRendererState from "../libs/PScriptRendererState";
 
 const types = {
     vec2: 0,
@@ -13,31 +13,18 @@ const types = {
 }
 const typesInverted = ["vec2", "vec3", "vec4"]
 
-export default class DraggableNodeUtils {
+export default class IDraggableUtil {
 
     static getMinimalType(...typesToCompare): string | undefined {
         const min = Math.min(...typesToCompare.map(t => types[t]).filter(t => t !== undefined))
         return typesInverted[min]
     }
 
-    static getIOColor(attribute: Output | Input, isSomeoneDisabled: boolean) {
-        const type = attribute.type || attribute.accept?.[0]
-        switch (type) {
-            case MaterialDataTypes.VEC2:
-            case MaterialDataTypes.COLOR:
-            case MaterialDataTypes.VEC3:
-            case MaterialDataTypes.VEC4:
-                return `rgba(255,165,0,${isSomeoneDisabled ? .5 : 1})`
-            case MaterialDataTypes.TEXTURE:
-                return `rgba(138,43,226, ${isSomeoneDisabled ? .5 : 1})`
-            case MaterialDataTypes.ANY:
-                return `rgba(255,255,255, ${isSomeoneDisabled ? .5 : 1})`
-            default:
-                return `rgba(153,153,153, ${isSomeoneDisabled ? .5 : 1})`
-        }
+    static getIOColor(attribute: IO, isSomeoneDisabled: boolean) {
+        return `rgba(${attribute.getColor()},${isSomeoneDisabled ? .5 : 1})`
     }
 
-    static getIOPosition(index: number, node: PNode, asOutput: boolean): {
+    static getIOPosition(index: number, node: NodeDraggable, asOutput: boolean): {
         x: number,
         y: number,
         height: number,
@@ -56,12 +43,14 @@ export default class DraggableNodeUtils {
         return {x: xIO, y: yIO, height: H, width: w, rowY: Y}
     }
 
-    static drag(event: MouseEvent, node: AbstractPDraggable, parentBbox, asPositionChange: boolean): {
+    static drag(
+        event: MouseEvent,
+        node: AbstractDraggable,
+        parentBbox,
+        asPositionChange: boolean): {
         onMouseMove: Function,
-        node: AbstractPDraggable
+        node: AbstractDraggable
     } {
-        const coord = node.getTransformedCoordinates()
-
         const bounding = {
             x: !asPositionChange ? 0 : node.x * CanvasResources.scale - event.clientX,
             y: !asPositionChange ? 0 : node.y * CanvasResources.scale - event.clientY
@@ -70,7 +59,7 @@ export default class DraggableNodeUtils {
             bounding.x -= parentBbox.left
             bounding.y -= parentBbox.top
         }
-        const STATE = PScriptRendererState.getState(node.__canvas.getId())
+        const STATE = node.__canvas.getState()
         return {
             node: node,
 
@@ -83,10 +72,10 @@ export default class DraggableNodeUtils {
                 } else {
                     X -= node.x
                     Y -= node.y
-                    if (X > node.minWidth) {
+                    if (X > node.getMinWidth()) {
                         node.width = X - STATE.offsetX
                     }
-                    if (Y > node.minHeight) {
+                    if (Y > node.getMinHeight()) {
                         node.height = Y - STATE.offsetY
                     }
                 }

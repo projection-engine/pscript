@@ -1,18 +1,18 @@
-import PComment from "./PComment";
-import PScriptCanvas from "./PScriptCanvas";
-import PNode from "./PNode";
-import CanvasResources from "./CanvasResources";
-import CanvasRenderer from "./CanvasRenderer";
-import PLink from "./PLink";
+import CommentDraggable from "../instances/CommentDraggable";
+import RenderEngine from "../instances/RenderEngine";
+import NodeDraggable from "../instances/NodeDraggable";
+import CanvasResources from "../libs/CanvasResources";
+import RendererUtil from "./RendererUtil";
+import Link from "../instances/Link";
 import {MaterialDataTypes} from "../pscript.enum";
-import DraggableNodeUtils from "./DraggableNodeUtils";
-import AbstractPDraggable from "./AbstractPDraggable";
+import IDraggableUtil from "./IDraggableUtil";
+import AbstractDraggable from "../instances/AbstractDraggable";
 import ToastNotificationSystem from "../../components/alert/ToastNotificationSystem";
 import LocalizationEN from "../resources/LocalizationEN";
-import PScriptRendererState from "./PScriptRendererState";
+import PScriptRendererState from "../libs/PScriptRendererState";
 
 export default class PScriptUtil {
-    static addComment(canvasAPI: PScriptCanvas) {
+    static addComment(canvasAPI: RenderEngine) {
         let smallestX: number | undefined,
             smallestY: number | undefined,
             biggestX: number | undefined,
@@ -21,7 +21,7 @@ export default class PScriptUtil {
 
         canvasAPI.selectionMap
             .forEach(n => {
-                if (n instanceof PComment)
+                if (n instanceof CommentDraggable)
                     return
                 if (!smallestX || n.x < smallestX)
                     smallestX = n.x
@@ -37,14 +37,14 @@ export default class PScriptUtil {
         smallestX -= 4
         smallestY -= 36
 
-        const comment = new PComment(canvasAPI, Math.max(smallestX, 0), Math.max(smallestY, 0), "New Comment", [155, 155, 155, 1])
+        const comment = new CommentDraggable(canvasAPI, Math.max(smallestX, 0), Math.max(smallestY, 0), "New Comment", [155, 155, 155, 1])
         comment.width = 8 + (biggestX - smallestX)
         comment.height = 40 + (biggestY - smallestY)
         canvasAPI.addNode(comment)
     }
 
 
-    static getCanvasZoomEvent(canvasAPI: PScriptCanvas): (this: HTMLCanvasElement, ev: WheelEvent) => void {
+    static getCanvasZoomEvent(canvasAPI: RenderEngine): (this: HTMLCanvasElement, ev: WheelEvent) => void {
         let localScale = 1
         return e => {
             e.preventDefault()
@@ -59,41 +59,41 @@ export default class PScriptUtil {
         }
     }
 
-    static handleLink(canvasAPI: PScriptCanvas, event: MouseEvent, x: number, y: number, sourceNode: PNode, sourceIO: Output) {
-        if (!sourceIO || !sourceNode)
-            return
-        const N = PScriptRendererState.getState(canvasAPI.getId()).nodes
-        const X = (event.clientX - x) / CanvasResources.scale
-        const Y = (event.clientY - y) / CanvasResources.scale
-
-        for (let i = N.length - 1; i >= 0; i--) {
-            const node = N[i]
-            if (node instanceof PNode) {
-                const onBody = node.checkBodyClick(X, Y)
-                if (onBody) {
-                    const targetIO = node.checkAgainstIO<Input>(X, Y, true)
-
-                    if (targetIO && targetIO.accept.includes(sourceIO.type)) {
-                        const newLink = new PLink(node, sourceNode, targetIO, sourceIO)
-                        canvasAPI.addLink(newLink)
-                    } else if (targetIO) {
-                        ToastNotificationSystem.getInstance().error(LocalizationEN.INVALID_TYPE)
-                    }
-                    break
-                }
-            }
-        }
+    static handleLink(canvasAPI: RenderEngine, event: MouseEvent, x: number, y: number, sourceNode: NodeDraggable, sourceIO: IOutput) {
+        // if (!sourceIO || !sourceNode)
+        //     return
+        // const N = canvasAPI.getState().nodes
+        // const X = (event.clientX - x) / CanvasResources.scale
+        // const Y = (event.clientY - y) / CanvasResources.scale
+        //
+        // for (let i = N.length - 1; i >= 0; i--) {
+        //     const node = N[i]
+        //     if (node instanceof NodeDraggable) {
+        //         const onBody = node.checkBodyClick(X, Y)
+        //         if (onBody) {
+        //             const targetIO = node.checkAgainstIO<IInput>(X, Y, true)
+        //
+        //             if (targetIO && targetIO.accept.includes(sourceIO.type)) {
+        //                 const newLink = new Link(node, sourceNode, targetIO, sourceIO)
+        //                 canvasAPI.addLink(newLink)
+        //             } else if (targetIO) {
+        //                 ToastNotificationSystem.getInstance().error(LocalizationEN.INVALID_TYPE)
+        //             }
+        //             break
+        //         }
+        //     }
+        // }
     }
 
-    static getMousedownEvent(canvasAPI: PScriptCanvas): (this: HTMLCanvasElement, ev: WheelEvent) => void {
-        const nodesOnDrag: { onMouseMove: Function, node: AbstractPDraggable }[] = []
-        const IO: { node: PNode | undefined, output: Output | undefined } = {node: undefined, output: undefined}
+    static getMousedownEvent(canvasAPI: RenderEngine): (this: HTMLCanvasElement, ev: WheelEvent) => void {
+        const nodesOnDrag: { onMouseMove: Function, node: AbstractDraggable }[] = []
+        const IO: { node: NodeDraggable | undefined, output: IOutput | undefined } = {node: undefined, output: undefined}
         const parentElement = canvasAPI.canvas.parentElement
         const tempLink = {x: 0, y: 0, x1: 0, y1: 0}
         let isOnScroll = false
         let parentBBox: MutableObject
         const initialClick = {x: 0, y: 0}
-        const STATE = PScriptRendererState.getState(canvasAPI.getId())
+        const STATE = canvasAPI.getState()
         let totalScrolledX = STATE.offsetX
         let totalScrolledY = STATE.offsetY
         const handleMouseMove = (event) => {
@@ -108,7 +108,7 @@ export default class PScriptUtil {
             } else {
                 const S = nodesOnDrag.length
                 if (IO.node !== undefined)
-                    CanvasRenderer.drawTempLink(event, parentElement, parentBBox, tempLink, canvasAPI)
+                    RendererUtil.drawTempLink(event, parentElement, parentBBox, tempLink, canvasAPI)
                 else if (S > 0) {
                     for (let i = 0; i < S; i++)
                         nodesOnDrag[i].onMouseMove(event)
@@ -175,8 +175,11 @@ export default class PScriptUtil {
         }
     }
 
-    static onMouseDownEvent(BBox, IO, tempLink, nodesOnDrag, canvasAPI: PScriptCanvas, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
-        const {nodes, links} = PScriptRendererState.getState(canvasAPI.getId())
+    static onMouseDownEvent(BBox, IO, tempLink, nodesOnDrag, canvasAPI: RenderEngine, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
+        const state = canvasAPI.getState()
+        const nodes =  <AbstractDraggable[]>state.nodes
+        const links = state.links
+
         const X = (event.clientX - BBox.x) / CanvasResources.scale
         const Y = (event.clientY - BBox.y) / CanvasResources.scale
 
@@ -185,50 +188,50 @@ export default class PScriptUtil {
             canvasAPI.selectionMap.clear()
         } else
             canvasAPI.selectionMap.forEach(node => {
-                nodesOnDrag.push(DraggableNodeUtils.drag(event, node, parentBBox, true))
+                nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
             })
 
         for (let i = nodes.length - 1; i >= 0; i--) {
             const node = nodes[i]
-            if (node instanceof PNode) {
+            if (node instanceof NodeDraggable) {
                 const onBody = node.checkBodyClick(X, Y)
                 const onHeader = node.checkHeaderClick(X, Y)
                 if (onHeader || onBody) {
                     canvasAPI.selectionMap.set(node.id, node)
                     canvasAPI.lastSelection = node
                     if (onHeader) {
-                        nodesOnDrag.push(DraggableNodeUtils.drag(event, node, parentBBox, true))
+                        nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
                         node.isOnDrag = true
                     } else if (!event.ctrlKey) {
                         const isOnScale = node.checkAgainstScale(X, Y)
                         if (isOnScale) {
-                            nodesOnDrag.push(DraggableNodeUtils.drag(event, node, parentBBox, false))
+                            nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, false))
                             node.isOnDrag = true
                         } else {
-                            const output = node.checkAgainstIO<Output>(X, Y)
+                            const output = node.checkAgainstIO<IOutput>(X, Y)
                             if (output) {
                                 IO.node = node
                                 IO.output = output
-                                const position = DraggableNodeUtils.getIOPosition(node.output.indexOf(output), node, true)
+                                const position = IDraggableUtil.getIOPosition(node.outputs.indexOf(output), node, true)
                                 tempLink.x = position.x
                                 tempLink.y = position.y
                             } else {
-                                const input = node.checkAgainstIO<Input>(X, Y, true)
+                                const input = node.checkAgainstIO<IInput>(X, Y, true)
                                 if (!input)
                                     break
-                                const F = links.findIndex(l => l.targetRef === input)
+                                const F = links.findIndex(l => l.input === input)
                                 if (F === -1)
                                     break
                                 const found = links[F]
-                                const originalPosition = DraggableNodeUtils.getIOPosition(found.sourceNode.output.indexOf(found.sourceRef), found.sourceNode, true)
+                                const originalPosition = IDraggableUtil.getIOPosition((<NodeDraggable>found.sourceNode).outputs.indexOf(found.output), <NodeDraggable>found.sourceNode, true)
                                 IO.node = found.sourceNode
-                                IO.output = found.sourceRef
+                                IO.output = found.output
 
                                 canvasAPI.removeLink(F)
 
                                 tempLink.x = originalPosition.x
                                 tempLink.y = originalPosition.y
-                                CanvasRenderer.drawTempLink(event, parentElement, parentBBox, tempLink, canvasAPI)
+                                RendererUtil.drawTempLink(event, parentElement, parentBBox, tempLink, canvasAPI)
                             }
                         }
                     }
@@ -239,12 +242,12 @@ export default class PScriptUtil {
                 const onHeader = node.checkHeaderClick(X, Y)
                 if (onHeader || onBody) {
                     if (onHeader) {
-                        nodesOnDrag.push(DraggableNodeUtils.drag(event, node, parentBBox, true))
+                        nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
                         node.isOnDrag = true
                     } else if (!event.ctrlKey) {
                         const isOnScale = node.checkAgainstScale(X, Y)
                         if (isOnScale) {
-                            nodesOnDrag.push(DraggableNodeUtils.drag(event, node, parentBBox, false))
+                            nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, false))
                             node.isOnDrag = true
                         }
                     }

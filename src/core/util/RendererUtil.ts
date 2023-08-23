@@ -1,14 +1,14 @@
-import type PNode from "./PNode"
+import type NodeDraggable from "../instances/NodeDraggable"
 import IO_RADIUS from "../resources/IO_RADIUS"
-import type PLink from "./PLink"
+import type Link from "../instances/Link"
 import HEADER_HEIGHT from "../resources/HEADER_HEIGHT"
-import type PComment from "./PComment"
+import type CommentDraggable from "../instances/CommentDraggable"
 import NODE_TYPES from "../resources/NODE_TYPES"
-import DraggableNodeUtils from "./DraggableNodeUtils"
-import CanvasResources from "./CanvasResources"
+import IDraggableUtil from "./IDraggableUtil"
+import CanvasResources from "../libs/CanvasResources"
 import {MaterialDataTypes} from "../pscript.enum";
-import AbstractPDraggable from "./AbstractPDraggable";
-import PScriptCanvas from "./PScriptCanvas";
+import AbstractDraggable from "../instances/AbstractDraggable";
+import RenderEngine from "../instances/RenderEngine";
 
 const INVERSE_MATERIAL_RENDERING_TYPES = {
     0: "Unlit",
@@ -19,7 +19,7 @@ const INVERSE_MATERIAL_RENDERING_TYPES = {
     5: "Transparency",
     6: "Sky"
 }
-export default class CanvasRenderer {
+export default class RendererUtil {
 
 
     static drawBezierCurve(ctx: CanvasRenderingContext2D, x1, x2, y1, y2) {
@@ -33,17 +33,15 @@ export default class CanvasRenderer {
         ctx.stroke()
     }
 
-    static drawIO(ctx: CanvasRenderingContext2D, asOutput: boolean, node: PNode, index: number, attribute: Input | Output) {
+    static drawIO(ctx: CanvasRenderingContext2D, asOutput: boolean, node: NodeDraggable, index: number, attribute: IO) {
         ctx.font = "8px Roboto"
-        ctx.strokeStyle = CanvasResources.borderColor
+        ctx.strokeStyle = node.__canvas.getState().borderColor
 
         const isColor = attribute.type === MaterialDataTypes.COLOR
-        const isTexture = attribute.type === MaterialDataTypes.TEXTURE
-
         const isDisabled = attribute.disabled
         let label = attribute.label
 
-        const linePosition = DraggableNodeUtils.getIOPosition(index, node, asOutput)
+        const linePosition = IDraggableUtil.getIOPosition(index, node, asOutput)
 
         let X = linePosition.x
         const LABEL_OFFSET = 13
@@ -66,21 +64,9 @@ export default class CanvasRenderer {
             return
         }
 
-        // if (isTexture && !asOutput) {
-        // 	ctx.fillStyle = CanvasResources.backgroundColor
-        // 	ctx.roundRect(X + IO_RADIUS, Y - H / 2, W / 2, H, 3)
-        // 	ctx.fill()
-        // 	ctx.stroke()
-        //
-        // 	const N = node._texture?.name
-        // 	ctx.fillStyle = N !== undefined ? "#d7d7d7" : "red"
-        // 	const S = N || "No texture selected"
-        // 	ctx.fillText(S.length > 20 ? S.substring(0, 20) + "..." : S, X + T_SIZE * 1.5, Y + T_SIZE / 2)
-        // 	return
-        // }
 
         if (attribute.accept || asOutput) {
-            ctx.fillStyle = DraggableNodeUtils.getIOColor(attribute, isDisabled)
+            ctx.fillStyle = IDraggableUtil.getIOColor(attribute, isDisabled)
 
             ctx.lineWidth = .5
 
@@ -94,32 +80,19 @@ export default class CanvasRenderer {
         } else
             X -= T_SIZE
 
-        const isOption = !attribute.accept && !asOutput
-        ctx.fillStyle = !isDisabled && !isOption ? "#d7d7d7" : "#999"
-
+        ctx.fillStyle = "#999"
 
         if (asOutput)
             ctx.fillText(label, X - labelSize + LABEL_OFFSET, Y - T_SIZE / 2)
         else {
             let X_P = X + LABEL_OFFSET
-            if (isOption) {
-                let value = node[attribute.key]
-                if (typeof value === "object") {
-                    label = label + " -Dynamic Property-"
-                } else {
-                    if (attribute.key === "renderingMode")
-                        value = INVERSE_MATERIAL_RENDERING_TYPES[value]
-                    label = label + ` (${value})`
-                }
-                X_P -= 5
-            }
             ctx.fillText(label, X_P, Y - T_SIZE / 2)
         }
 
         ctx.closePath()
     }
 
-    static drawNodePosition(ctx: CanvasRenderingContext2D, node: AbstractPDraggable) {
+    static drawNodePosition(ctx: CanvasRenderingContext2D, node: AbstractDraggable) {
         ctx.font = "10px Roboto"
         const coord = node.getTransformedCoordinates()
         const TEXT = `X ${coord.x} Y ${coord.y} W ${node.width} H ${node.height}`
@@ -132,31 +105,31 @@ export default class CanvasRenderer {
 
     }
 
-    static drawLink(ctx: CanvasRenderingContext2D, link: PLink) {
+    static drawLink(ctx: CanvasRenderingContext2D, link: Link) {
 
         const T = link.targetNode, S = link.sourceNode
         const coordS = S.getTransformedCoordinates()
         const coordT = T.getTransformedCoordinates()
         const x1 = coordS.x + S.width, x2 = coordT.x,
-            y1 = coordS.y + HEADER_HEIGHT + IO_RADIUS * 3 + S.output.indexOf(link.sourceRef) * 20,
-            y2 = coordT.y + HEADER_HEIGHT + IO_RADIUS * 3 + T.inputs.indexOf(link.targetRef) * 20
+            y1 = coordS.y + HEADER_HEIGHT + IO_RADIUS * 3 + S.outputs.indexOf(link.output) * 20,
+            y2 = coordT.y + HEADER_HEIGHT + IO_RADIUS * 3 + T.inputs.indexOf(link.input) * 20
 
-        const isSomeoneDisabled = link.sourceRef.disabled || link.targetRef.disabled
-        ctx.strokeStyle = DraggableNodeUtils.getIOColor(link.sourceRef, isSomeoneDisabled)
+        const isSomeoneDisabled = link.output.disabled || link.input.disabled
+        ctx.strokeStyle = IDraggableUtil.getIOColor(link.output, isSomeoneDisabled)
 
-        CanvasRenderer.drawBezierCurve(ctx, x1, x2, y1, y2)
+        RendererUtil.drawBezierCurve(ctx, x1, x2, y1, y2)
     }
 
-    static drawTempLink(event: MouseEvent, parentElement, parentBBox, tempLink, canvasAPI: PScriptCanvas) {
+    static drawTempLink(event: MouseEvent, parentElement, parentBBox, tempLink, canvasAPI: RenderEngine) {
         tempLink.x1 = (event.clientX - parentBBox.x + parentElement.scrollLeft) / CanvasResources.scale
         tempLink.y1 = (event.clientY - parentBBox.y + parentElement.scrollTop) / CanvasResources.scale
 
         canvasAPI.clear()
         canvasAPI.ctx.strokeStyle = "#0095ff"
-        CanvasRenderer.drawBezierCurve(canvasAPI.ctx, tempLink.x, tempLink.x1, tempLink.y, tempLink.y1)
+        RendererUtil.drawBezierCurve(canvasAPI.ctx, tempLink.x, tempLink.x1, tempLink.y, tempLink.y1)
     }
 
-    static drawNodeHeader(ctx: CanvasRenderingContext2D, node: AbstractPDraggable) {
+    static drawNodeHeader(ctx: CanvasRenderingContext2D, node: AbstractDraggable) {
         const name = node.label
         const color = node.colorRGBA
         const coord = node.getTransformedCoordinates()
@@ -164,7 +137,7 @@ export default class CanvasRenderer {
         ctx.beginPath()
         const fontFill = "#f0f0f0"
         ctx.fillStyle = `rgb(${color})`
-        ctx.strokeStyle = CanvasResources.borderColor
+        ctx.strokeStyle = node.__canvas.getState().borderColor
         ctx.lineWidth = .5
         ctx.roundRect(coord.x, coord.y, node.width, 23, [3, 3, 0, 0])
         ctx.stroke()
@@ -178,12 +151,12 @@ export default class CanvasRenderer {
 
     }
 
-    static drawRoundedRect(ctx: CanvasRenderingContext2D, node: AbstractPDraggable, r: number, isSelected: boolean, isFirstSelected: boolean, color: string) {
+    static drawRoundedRect(ctx: CanvasRenderingContext2D, node: AbstractDraggable, r: number, isSelected: boolean, isFirstSelected: boolean, color: string) {
         const coord = node.getTransformedCoordinates()
         const w = node.width, h = node.height, x = coord.x, y = coord.y
         if (w < 2 * r) r = w / 2
         if (h < 2 * r) r = h / 2
-        let outlineColor = CanvasResources.borderColor
+        let outlineColor = node.__canvas.getState().borderColor
         if (isSelected)
             outlineColor = isFirstSelected ? "white" : "darkorange"
 
