@@ -5,8 +5,6 @@ import HEADER_HEIGHT from "../resources/HEADER_HEIGHT"
 import IDraggableUtil from "./IDraggableUtil"
 import AbstractDraggable from "../instances/AbstractDraggable";
 import RenderEngine from "../instances/RenderEngine";
-import Output from "../instances/Output";
-import Input from "../instances/Input";
 
 
 export default class RendererUtil {

@@ -4,8 +4,6 @@ import type RenderEngine from "./RenderEngine"
 import AbstractDraggable from "./AbstractDraggable"
 import RendererUtil from "../util/RendererUtil"
 import IDraggableUtil from "../util/IDraggableUtil"
-import Output from "./Output";
-import Input from "./Input";
 import NodeType from "./NodeType";
 
 export default abstract class NodeDraggable extends AbstractDraggable implements INodeDraggable {
