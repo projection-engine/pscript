@@ -1,10 +1,9 @@
-import type NodeDraggable from "./NodeDraggable"
 import type RenderEngine from "./RenderEngine"
 import RendererUtil from "../util/RendererUtil"
 import AbstractDraggable from "./AbstractDraggable"
 
 
-export default class CommentDraggable extends AbstractDraggable {
+export default class CommentDraggable extends AbstractDraggable implements ICommentDraggable{
     constructor(canvas: RenderEngine, x: number, y: number, label: string, colorRGBA: [number, number, number, number]) {
         super(canvas, x, y, label, colorRGBA)
         this.height = 200

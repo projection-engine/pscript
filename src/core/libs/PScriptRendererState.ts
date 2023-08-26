@@ -1,9 +1,5 @@
-import CommentDraggable from "../instances/CommentDraggable";
-import NodeDraggable from "../instances/NodeDraggable";
 import DynamicMap from "./DynamicMap";
 import {UUID} from "crypto";
-import Link from "../instances/Link";
-import AbstractDraggable from "../instances/AbstractDraggable";
 import RenderEngine from "../instances/RenderEngine";
 
 export default class PScriptRendererState {
@@ -21,13 +17,23 @@ export default class PScriptRendererState {
             getId: () => id,
             links: [],
             nodes: [],
+            functions: [],
+            comments: [],
             needsUpdate: false,
             getInstance: () => instance,
             grid: 20,
             scale: 1,
             backgroundColor: "#292929",
             rectColor: "#353535",
-            borderColor: "#6b6b6b"
+            borderColor: "#6b6b6b",
+            defaultFont: "10px Roboto",
+            smallFont: "8px Roboto",
+            textColor: "#f0f0f0",
+            defaultTextSize: 1,
+            smallTextSize: 1,
+            firstSelectionColor: "white",
+            multiSelectionColor: "darkorange",
+            ioTextColor: "#999"
         })
         return instance
     }

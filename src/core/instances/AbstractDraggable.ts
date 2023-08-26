@@ -1,8 +1,6 @@
 import HEADER_HEIGHT from "../resources/HEADER_HEIGHT"
 import SCALE_BUTTON_SIZE from "../resources/SCALE_BUTTON_SIZE"
-import CanvasResources from "../libs/CanvasResources"
 import RenderEngine from "./RenderEngine";
-import PScriptRendererState from "../libs/PScriptRendererState";
 
 export default abstract class AbstractDraggable implements IDraggable {
     id = crypto.randomUUID()

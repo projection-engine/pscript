@@ -6,7 +6,6 @@ import LocalizationEN from "../resources/LocalizationEN";
 import UndoRedo from "./UndoRedo";
 
 
-
 export default class ActionHistory {
     #cache = new UndoRedo<Action>()
     canvas: RenderEngine

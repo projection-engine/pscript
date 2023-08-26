@@ -9,7 +9,6 @@
     import LocalizationEN from "../resources/LocalizationEN";
     import Icon from "../../components/icon/Icon.svelte";
     import ResizableBar from "../../components/resizable/ResizableBar.svelte";
-    import AbstractDraggable from "../instances/AbstractDraggable";
 
     export let allNodes:{ label: string, class: string }[]
     export let scriptCanvas: RenderEngine

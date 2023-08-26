@@ -2,7 +2,6 @@
     import LocalizationEN from "../resources/LocalizationEN";
     import Input from "../../components/input/Input.svelte";
     import Icon from "../../components/icon/Icon.svelte";
-    import AbstractDraggable from "../instances/AbstractDraggable";
 
     export let allNodes:{ label: string, class: string }[] = []
     let inputValue = ""

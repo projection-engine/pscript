@@ -7,7 +7,7 @@ import IDraggableUtil from "../util/IDraggableUtil"
 import Output from "./Output";
 import Input from "./Input";
 
-export default abstract class NodeDraggable extends AbstractDraggable {
+export default abstract class NodeDraggable extends AbstractDraggable implements INodeDraggable {
     minWidth = 150
     targetCommentID: string | undefined
     outputs: Output[] = []
@@ -32,14 +32,17 @@ export default abstract class NodeDraggable extends AbstractDraggable {
 
 
         for (let i = 0; i < data.length; i++) {
-            if (data[i].disabled)
+            let io = data[i];
+            if (asInput && (io as Input).disabled) {
                 continue
+            }
             const linePosition = IDraggableUtil.getIOPosition(i, this, !asInput)
             const xIO = linePosition.x
             const yIO = linePosition.y
 
-            if ((x - xIO) ** 2 + (y - yIO) ** 2 < R2)
-                return <T>data[i]
+            if ((x - xIO) ** 2 + (y - yIO) ** 2 < R2) {
+                return <T>io
+            }
         }
     }
 
@@ -50,12 +53,12 @@ export default abstract class NodeDraggable extends AbstractDraggable {
 
         for (let j = 0; j < this.outputs.length; j++) {
             const C = this.outputs[j]
-            RendererUtil.drawIO(ctx, true, this, j, C)
+            RendererUtil.drawOutput(this, j, C)
         }
 
         for (let j = 0; j < this.inputs.length; j++) {
             const C = this.inputs[j]
-            RendererUtil.drawIO(ctx, false, this, j, C)
+            RendererUtil.drawInput(this, j, C)
         }
         this.drawScale()
     }
