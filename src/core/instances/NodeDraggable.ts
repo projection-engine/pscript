@@ -12,14 +12,13 @@ export default abstract class NodeDraggable extends AbstractDraggable implements
      */
     __properties = new Map<string, any>()
 
-    minWidth = 150
-    targetCommentID: string | undefined
     #minHeight = HEADER_HEIGHT
     outputs: IOutput[] = []
     inputs: IInput[] = []
     abstract nodeType: NodeType
 
-    constructor(props: {
+
+    protected constructor(props: {
         canvas: RenderEngine,
         x: number,
         y: number,

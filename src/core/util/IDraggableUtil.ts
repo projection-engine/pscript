@@ -232,10 +232,9 @@ export default class IDraggableUtil {
             isOnScroll: false
         }
         const initialClick = {x: 0, y: 0}
-        let totalScrolledX = state.offsetX
-        let totalScrolledY = state.offsetY
+        const totalScrolled = {x: state.offsetX, y: state.offsetY}
         const handleMouseMove = (event: MouseEvent) => {
-            IDraggableUtil.onMouseMove(executionState, totalScrolledY, event, totalScrolledX, state, nodesOnDrag, IO, parentElement, canvasAPI);
+            IDraggableUtil.onMouseMove(executionState, totalScrolled, event, state, nodesOnDrag, IO, parentElement, canvasAPI);
         }
 
         return (mouseDownEvent: MouseEvent) => {
@@ -286,8 +285,8 @@ export default class IDraggableUtil {
 
     private static onMouseMove(
         executionState: { isOnScroll: boolean, parentBBox: DOMRect },
-        totalScrolledY: number,
-        event: MouseEvent, totalScrolledX: number,
+        totalScrolled: {x: number, y: number},
+        event: MouseEvent,
         state: RendererState<RenderEngine>,
         nodesOnDrag: { onMouseMove: Function; node: AbstractDraggable }[],
         IO: { node?: INodeDraggable; output?: IOutput },
@@ -295,12 +294,12 @@ export default class IDraggableUtil {
         canvasAPI: RenderEngine
     ) {
         if (executionState.isOnScroll) {
-            totalScrolledY += event.movementY
-            totalScrolledX += event.movementX
-
-            state.offsetY = Math.round(totalScrolledY / state.grid) * state.grid
-            state.offsetX = Math.round(totalScrolledX / state.grid) * state.grid
-
+            totalScrolled.y += event.movementY
+            totalScrolled.x += event.movementX
+            const G = state.grid/2
+            state.offsetY = Math.round(totalScrolled.y / G) * G
+            state.offsetX = Math.round(totalScrolled.x / G) * G
+            state.getInstance().canvas.style.backgroundPosition = `${state.offsetX}px ${state.offsetY}px`
             state.needsUpdate = true
         } else {
             const S = nodesOnDrag.length
