@@ -164,13 +164,11 @@ export default class IDraggableUtil {
     }
 
     private static processInputClick(
-        links: ILink[],
-        linkIndex: number,
+        links: ILink[], linkIndex: number,
         IO: { node?: INodeDraggable; output?: IOutput },
-        canvasAPI: CanvasRenderEngine,
-        event: MouseEvent,
-        parentElement: HTMLElement,
-        parentBBox: DOMRect) {
+        canvasAPI: CanvasRenderEngine, event: MouseEvent,
+        parentElement: HTMLElement, parentBBox: DOMRect) {
+
         const found = links[linkIndex]
         const originalPosition = IDraggableUtil.getIOPosition((<AbstractNode>found.sourceNode).outputs.indexOf(found.output), <AbstractNode>found.sourceNode, true)
         IO.node = found.sourceNode

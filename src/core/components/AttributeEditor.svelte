@@ -4,7 +4,7 @@
     import type AbstractNode from "../instances/AbstractNode";
     import Comment from "../instances/Comment";
     import LocalizationEN from "../resources/LocalizationEN";
-    import Input from "../../components/input/Input.svelte";
+    import AbstractInput from "../../components/input/Input.svelte";
     import ColorPicker from "../../components/color-picker/ColorPicker.svelte";
 
     export let node: AbstractNode | Comment

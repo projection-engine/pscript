@@ -73,7 +73,7 @@ export default abstract class AbstractNode extends AbstractDraggable implements 
     drawToCanvas() {
         const ctx = this.__canvas.ctx
         RendererUtil.drawRoundedRect(ctx, this, 3, this.__canvas.selectionMap.get(this.id) !== undefined, this.__canvas.lastSelection === this, this.__canvas.getState().rectColor)
-        RendererUtil.drawNodeHeader(ctx, <INodeDraggable>this)
+        RendererUtil.drawDraggableHeader(ctx, this)
 
         for (let j = 0; j < this.outputs.length; j++) {
             const C = this.outputs[j]

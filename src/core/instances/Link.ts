@@ -1,18 +1,7 @@
-import type AbstractNode from "./AbstractNode"
-import Bend from "./Bend";
+import AbstractLink from "./AbstractLink";
 
-export default class Link implements ILink{
-	input: IInput
-	output: IOutput
-	targetNode: AbstractNode
-	sourceNode: AbstractNode
-	bends: Bend[]
-
-	constructor(target: AbstractNode, source: AbstractNode, tR: IInput, sR: IOutput) {
-		this.targetNode = target
-		this.sourceNode = source
-		this.input = tR
-		this.output = sR
-	}
-
+export default class Link extends AbstractLink{
+    static of(target: IDraggable, source: IDraggable, tR: IInput, sR: IOutput) {
+        return new Link(target, source, tR, sR)
+    }
 }

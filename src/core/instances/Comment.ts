@@ -18,7 +18,7 @@ export default class Comment extends AbstractDraggable implements ICommentDragga
     drawToCanvas() {
         const ctx = this.__canvas.ctx
         RendererUtil.drawRoundedRect(ctx, this, 3, this.__canvas.selectionMap.get(this.id) !== undefined, this.__canvas.lastSelection === this, `rgba(${[this.colorRGBA[0], this.colorRGBA[1], this.colorRGBA[2], .5]})`)
-        RendererUtil.drawNodeHeader(ctx, this)
+        RendererUtil.drawDraggableHeader(ctx, this)
         this.drawScale()
     }
 

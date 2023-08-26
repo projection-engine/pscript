@@ -1,9 +1,11 @@
 import AbstractNode from "../../../core/instances/AbstractNode";
-import Input from "../../../core/instances/Input";
-import Output from "../../../core/instances/Output";
+import AbstractInput from "../../../core/instances/AbstractInput";
+import AbstractOutput from "../../../core/instances/AbstractOutput";
 import Types, {Colors, NodeTypes} from "../javascript.enum";
 import PropertyType from "../../../core/instances/PropertyType";
 import NodeType from "../../../core/instances/NodeType";
+import Output from "../../../core/instances/Output";
+import Input from "../../../core/instances/Input";
 
 export default class NumberVal extends AbstractNode {
     nodeType = NodeType.of(NodeTypes.VAR);
@@ -16,7 +18,7 @@ export default class NumberVal extends AbstractNode {
         super({
             ...props,
             inputs: [
-                new Input({
+                Input.of({
                     key: "value",
                     label: "Value",
                     accept: [],
@@ -25,7 +27,7 @@ export default class NumberVal extends AbstractNode {
                 })
             ],
             outputs: [
-                new Output({
+                Output.of({
                     key: "value",
                     label: "Value",
                     type: PropertyType.of(Types.NUMBER),

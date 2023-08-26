@@ -1,6 +1,6 @@
 import RendererUtil from "./util/RendererUtil"
 import AbstractNode from "./instances/AbstractNode"
-import type Link from "./instances/Link"
+import type AbstractLink from "./instances/AbstractLink"
 import Comment from "./instances/Comment"
 import ActionHistory from "./libs/ActionHistory"
 import PScriptUtil from "./util/PScriptUtil";
@@ -97,7 +97,7 @@ export default class CanvasRenderEngine implements IRenderEngine {
         return PScriptRendererState.getState(this.getId())
     }
 
-    addLink(link: Link, noUpdate?: boolean) {
+    addLink(link: AbstractLink, noUpdate?: boolean) {
         const foundExisting = this.#state.links.findIndex(l => l.input === link.input)
         if (foundExisting > -1)
             this.#state.links[foundExisting] = link
@@ -129,7 +129,7 @@ export default class CanvasRenderEngine implements IRenderEngine {
         if (node instanceof Comment) {
             this.#state.comments.push(node)
         } else {
-            this.#state.nodes.push(node)
+            this.#state.nodes.push(<AbstractNode>node)
         }
         this.clear()
     }
@@ -187,7 +187,7 @@ export default class CanvasRenderEngine implements IRenderEngine {
         }
 
         for (let i = 0; i < links.length; i++) {
-            RendererUtil.drawLink(ctx, <Link>links[i])
+            RendererUtil.drawLink(ctx, <AbstractLink>links[i])
         }
 
         for (let i = 0; i < nodes.length; i++) {

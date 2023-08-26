@@ -3,6 +3,7 @@ import AbstractNode from "../instances/AbstractNode";
 import {MaterialDataTypes} from "../pscript.enum";
 import LocalizationEN from "../resources/LocalizationEN";
 import ToastNotificationSystem from "../../components/alert/ToastNotificationSystem";
+import AbstractLink from "../instances/AbstractLink";
 import Link from "../instances/Link";
 
 export default class PScriptUtil {
@@ -69,7 +70,7 @@ export default class PScriptUtil {
                 if (onBody) {
                     const targetIO = node.checkAgainstIO<IInput>(X, Y, true)
                     if (targetIO?.acceptsType?.(sourceIO.type)) {
-                        const newLink = new Link(node, <AbstractNode>sourceNode, targetIO, sourceIO)
+                        const newLink = new Link(node, sourceNode, targetIO, sourceIO)
                         canvasAPI.addLink(newLink)
                     } else if (targetIO) {
                         ToastNotificationSystem.getInstance().error(LocalizationEN.INVALID_TYPE)

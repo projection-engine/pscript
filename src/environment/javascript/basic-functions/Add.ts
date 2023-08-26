@@ -1,10 +1,12 @@
 import AbstractNode from "../../../core/instances/AbstractNode";
-import Output from "../../../core/instances/Output";
-import Input from "../../../core/instances/Input";
+import AbstractOutput from "../../../core/instances/AbstractOutput";
+import AbstractInput from "../../../core/instances/AbstractInput";
 import Types, {Colors, NodeTypes} from "../javascript.enum";
 
 import PropertyType from "../../../core/instances/PropertyType";
 import NodeType from "../../../core/instances/NodeType";
+import Output from "../../../core/instances/Output";
+import Input from "../../../core/instances/Input";
 
 export default class Add extends AbstractNode {
     nodeType = NodeType.of(NodeTypes.FUNCTION);
@@ -17,7 +19,7 @@ export default class Add extends AbstractNode {
         super({
             ...props,
             inputs: [
-                new Input({
+                Input.of({
                     key: "a",
                     label: "A",
                     accept: [
@@ -27,7 +29,7 @@ export default class Add extends AbstractNode {
                     visibleOnNode: true,
                     colorRGBA: Colors.NUMBER
                 }),
-                new Input({
+                Input.of({
                     key: "b",
                     label: "B",
                     accept: [
@@ -39,7 +41,7 @@ export default class Add extends AbstractNode {
                 })
             ],
             outputs: [
-                new Output({
+                Output.of({
                     key: "sum",
                     label: "Sum",
                     type: PropertyType.of(Types.NUMBER),

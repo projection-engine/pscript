@@ -1,9 +1,9 @@
 import AbstractNode from "../instances/AbstractNode"
-import type Link from "../instances/Link"
+import type AbstractLink from "../instances/AbstractLink"
 import IDraggableUtil from "./IDraggableUtil"
 import AbstractDraggable from "../instances/AbstractDraggable";
 import CanvasRenderEngine from "../CanvasRenderEngine";
-import RootNode from "../instances/RootNode";
+import ExecutionInput from "../instances/ExecutionInput";
 
 
 export default class RendererUtil {
@@ -93,8 +93,7 @@ export default class RendererUtil {
 
     }
 
-    static drawLink(ctx: CanvasRenderingContext2D, link: Link) {
-
+    static drawLink(ctx: CanvasRenderingContext2D, link: AbstractLink) {
         const T = link.targetNode, S = link.sourceNode
         const coordS = S.getTransformedCoordinates()
         const coordT = T.getTransformedCoordinates()
@@ -116,9 +115,8 @@ export default class RendererUtil {
         state.needsUpdate = true
     }
 
-    static drawNodeHeader(ctx: CanvasRenderingContext2D, node: INodeDraggable) {
+    static drawDraggableHeader(ctx: CanvasRenderingContext2D, node: IDraggable) {
         const state = node.__canvas.getState()
-        const isRootNode = node instanceof RootNode
         const name = node.label
         const color = node.colorRGBA
         const coord = node.getTransformedCoordinates()
@@ -133,9 +131,8 @@ export default class RendererUtil {
         ctx.font = state.defaultFont
 
         ctx.fillStyle = state.textColor
-        ctx.fillText(name, coord.x + AbstractNode.IO_RADIUS * (isRootNode ? 1 : 4), coord.y + RendererUtil.#OFFSET_Y_TITLE)
+        ctx.fillText(name, coord.x + AbstractNode.IO_RADIUS, coord.y + RendererUtil.#OFFSET_Y_TITLE)
         ctx.closePath()
-        this.#drawExecutionIO(ctx, node)
     }
 
     static #drawExecutionIO(ctx: CanvasRenderingContext2D, node: INodeDraggable) {
@@ -144,9 +141,11 @@ export default class RendererUtil {
         ctx.strokeStyle = state.borderColor
         ctx.fillStyle = state.executionIOColor
         ctx.lineWidth = .5
-        if (!(node instanceof RootNode))
+        if (node instanceof ExecutionInput) {
             this.drawTriangleIOExecution(coord.y, coord.x + AbstractNode.IO_RADIUS * 3, ctx);
-        this.drawTriangleIOExecution(coord.y, coord.x + node.width - AbstractNode.IO_RADIUS, ctx);
+        } else {
+            this.drawTriangleIOExecution(coord.y, coord.x + node.width - AbstractNode.IO_RADIUS, ctx);
+        }
     }
 
     private static drawTriangleIOExecution(startY, startX: number, ctx: CanvasRenderingContext2D) {

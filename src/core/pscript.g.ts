@@ -16,6 +16,7 @@ interface IStateful {
 }
 
 interface IDraggable extends IStateful {
+
     y: number;
     x: number;
     height: number;
@@ -35,6 +36,8 @@ interface IDraggable extends IStateful {
 }
 
 interface INodeDraggable extends IDraggable {
+    outputs: IOutput[]
+    inputs: IInput[]
 }
 
 interface ICommentDraggable extends IDraggable {
