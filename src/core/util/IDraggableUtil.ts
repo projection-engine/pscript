@@ -87,7 +87,10 @@ export default class IDraggableUtil {
         }
     }
 
-    static onMouseDownEvent(BBox, IO, nodesOnDrag, canvasAPI: RenderEngine, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
+    static onMouseDownEvent(BBox: DOMRect, IO: {
+        node?: INodeDraggable;
+        output?: IOutput
+    }, nodesOnDrag, canvasAPI: RenderEngine, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
         const state = canvasAPI.getState()
         const nodes = <NodeDraggable[]>state.nodes
         const comments = <CommentDraggable[]>state.comments
@@ -130,12 +133,12 @@ export default class IDraggableUtil {
                                 executionBroken = true
                                 break
                             }
-                            const F = links.findIndex(l => l.input === input)
-                            if (F === -1) {
+                            const linkIndex = links.findIndex(l => l.input === input)
+                            if (linkIndex === -1) {
                                 executionBroken = true
                                 break
                             }
-                            this.processInputClick(links, F, IO, canvasAPI, event, parentElement, parentBBox);
+                            this.processInputClick(links, linkIndex, IO, canvasAPI, event, parentElement, parentBBox);
                         }
                     }
                 }
@@ -161,25 +164,37 @@ export default class IDraggableUtil {
         canvasAPI.clear()
     }
 
-    private static processOutputClick(IO, node: NodeDraggable, output: IOutput) {
+    private static processOutputClick(IO: {
+        node?: INodeDraggable;
+        output?: IOutput
+    }, node: NodeDraggable, output: IOutput) {
         IO.node = node
         IO.output = output
         const position = IDraggableUtil.getIOPosition(node.outputs.indexOf(output), node, true)
         const state = node.__canvas.getState()
         state.tempLinkCoords.startX = position.x
         state.tempLinkCoords.startY = position.y
+        state.tempLinkCoords.color = `rgba(${output.colorRGBA})`
     }
 
-    private static processInputClick(links: ILink[], F: number, IO, canvasAPI: RenderEngine, event: MouseEvent, parentElement: HTMLElement, parentBBox) {
-        const found = links[F]
+    private static processInputClick(
+        links: ILink[],
+        linkIndex: number,
+        IO: { node?: INodeDraggable; output?: IOutput },
+        canvasAPI: RenderEngine,
+        event: MouseEvent,
+        parentElement: HTMLElement,
+        parentBBox: DOMRect) {
+        const found = links[linkIndex]
         const originalPosition = IDraggableUtil.getIOPosition((<NodeDraggable>found.sourceNode).outputs.indexOf(found.output), <NodeDraggable>found.sourceNode, true)
         IO.node = found.sourceNode
         IO.output = found.output
 
-        canvasAPI.removeLink(F)
+        canvasAPI.removeLink(linkIndex)
         const state = canvasAPI.getState()
         state.tempLinkCoords.startX = originalPosition.x
         state.tempLinkCoords.startY = originalPosition.y
+        state.tempLinkCoords.color = `rgba(${found.input.colorRGBA})`
         RendererUtil.drawTempLink(event, parentElement, parentBBox, canvasAPI)
     }
 
@@ -234,7 +249,7 @@ export default class IDraggableUtil {
         initialClick: { x: number; y: number },
         executionState: { parentBBox: DOMRect; isOnScroll: boolean },
         parentElement: HTMLElement,
-        IO: { node?: NodeDraggable; output?: IOutput },
+        IO: { node?: INodeDraggable; output?: IOutput },
         nodesOnDrag: { onMouseMove: Function; node: AbstractDraggable }[],
         handleMouseMove: (event: MouseEvent) => void
     ) {
@@ -275,7 +290,7 @@ export default class IDraggableUtil {
         event: MouseEvent, totalScrolledX: number,
         state: RendererState<RenderEngine>,
         nodesOnDrag: { onMouseMove: Function; node: AbstractDraggable }[],
-        IO: { node?: NodeDraggable; output?: IOutput },
+        IO: { node?: INodeDraggable; output?: IOutput },
         parentElement: HTMLElement,
         canvasAPI: RenderEngine
     ) {

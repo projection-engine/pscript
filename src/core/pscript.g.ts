@@ -108,7 +108,8 @@ interface RendererState<T> {
         x: number,
         y: number,
         startX: number,
-        startY: number
+        startY: number,
+        color: string
     },
     drawTempLink: boolean
 }

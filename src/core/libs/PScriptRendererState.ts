@@ -27,14 +27,14 @@ export default class PScriptRendererState {
             rectColor: "#353535",
             borderColor: "#6b6b6b",
             defaultFont: "10px Roboto",
-            smallFont: "8px Roboto",
+            smallFont: "9px Roboto",
             textColor: "#f0f0f0",
             defaultTextSize: 1,
             smallTextSize: 1,
             firstSelectionColor: "white",
             multiSelectionColor: "darkorange",
-            ioTextColor: "#999",
-            tempLinkCoords: {x: 0, y: 0, startY: 0, startX: 0},
+            ioTextColor: "#e0e0e0",
+            tempLinkCoords: {x: 0, y: 0, startY: 0, startX: 0, color: "white"},
             drawTempLink: false
         })
         return instance

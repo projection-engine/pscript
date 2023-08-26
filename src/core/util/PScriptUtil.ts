@@ -58,7 +58,7 @@ export default class PScriptUtil {
         }
     }
 
-    static handleLink(canvasAPI: RenderEngine, event: MouseEvent, x: number, y: number, sourceNode: NodeDraggable, sourceIO: IOutput) {
+    static handleLink(canvasAPI: RenderEngine, event: MouseEvent, x: number, y: number, sourceNode: INodeDraggable, sourceIO: IOutput) {
         if (!sourceIO || !sourceNode)
             return
         const state = canvasAPI.getState()
@@ -73,7 +73,7 @@ export default class PScriptUtil {
                 if (onBody) {
                     const targetIO = node.checkAgainstIO<IInput>(X, Y, true)
                     if (targetIO?.acceptsType?.(sourceIO.type)) {
-                        const newLink = new Link(node, sourceNode, targetIO, sourceIO)
+                        const newLink = new Link(node, <NodeDraggable>sourceNode, targetIO, sourceIO)
                         canvasAPI.addLink(newLink)
                     } else if (targetIO) {
                         ToastNotificationSystem.getInstance().error(LocalizationEN.INVALID_TYPE)

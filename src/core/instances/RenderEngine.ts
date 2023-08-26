@@ -200,8 +200,9 @@ export default class RenderEngine implements IRenderEngine {
 
         if (STATE.drawTempLink) {
             const coords = STATE.tempLinkCoords
-            ctx.strokeStyle = "#0095ff"
+            ctx.strokeStyle = coords.color
             RendererUtil.drawBezierCurve(ctx, coords.startX, coords.x, coords.startY, coords.y)
+            STATE.drawTempLink = false
         }
     }
 }
