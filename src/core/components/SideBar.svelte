@@ -3,8 +3,6 @@
     import Nodes from "./Nodes.svelte";
     import AttributeEditor from "./AttributeEditor.svelte";
     import type CanvasRenderEngine from "../CanvasRenderEngine";
-    import type AbstractNode from "../instances/AbstractNode";
-    import Comment from "../instances/Comment";
     import {onDestroy, onMount} from "svelte";
     import LocalizationEN from "../resources/LocalizationEN";
     import Icon from "../../components/icon/Icon.svelte";
@@ -14,7 +12,7 @@
     export let scriptCanvas: CanvasRenderEngine
 
     let tab = 0
-    let mainNode: AbstractNode | Comment | undefined
+    let mainNode: IDraggable
 
     onMount(() => {
         scriptCanvas.lastSelectionListener = () => mainNode = scriptCanvas.lastSelection

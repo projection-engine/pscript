@@ -6,6 +6,8 @@ import PropertyType from "../../../core/instances/PropertyType";
 import NodeType from "../../../core/instances/NodeType";
 import Output from "../../../core/instances/Output";
 import Input from "../../../core/instances/Input";
+import ExecutionInput from "../../../core/instances/ExecutionInput";
+import ExecutionOutput from "../../../core/instances/ExecutionOutput";
 
 export default class NumberVal extends AbstractNode {
     nodeType = NodeType.of(NodeTypes.VAR);
@@ -18,6 +20,7 @@ export default class NumberVal extends AbstractNode {
         super({
             ...props,
             inputs: [
+                ExecutionInput.of("run", "Continue"),
                 Input.of({
                     key: "value",
                     label: "Value",
@@ -27,6 +30,7 @@ export default class NumberVal extends AbstractNode {
                 })
             ],
             outputs: [
+                ExecutionOutput.of("run", "Continue"),
                 Output.of({
                     key: "value",
                     label: "Value",

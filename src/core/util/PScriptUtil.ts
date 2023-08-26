@@ -3,7 +3,6 @@ import AbstractNode from "../instances/AbstractNode";
 import {MaterialDataTypes} from "../pscript.enum";
 import LocalizationEN from "../resources/LocalizationEN";
 import ToastNotificationSystem from "../../components/alert/ToastNotificationSystem";
-import AbstractLink from "../instances/AbstractLink";
 import Link from "../instances/Link";
 
 export default class PScriptUtil {

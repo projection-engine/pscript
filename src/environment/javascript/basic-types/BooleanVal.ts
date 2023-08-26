@@ -6,6 +6,8 @@ import PropertyType from "../../../core/instances/PropertyType";
 import NodeType from "../../../core/instances/NodeType";
 import Output from "../../../core/instances/Output";
 import Input from "../../../core/instances/Input";
+import ExecutionOutput from "../../../core/instances/ExecutionOutput";
+import ExecutionInput from "../../../core/instances/ExecutionInput";
 
 export default class BooleanVal extends AbstractNode {
 
@@ -19,6 +21,7 @@ export default class BooleanVal extends AbstractNode {
         super({
             ...props,
             inputs: [
+                ExecutionInput.of("run", "Continue"),
                 Input.of({
                     key: "truthy",
                     label: "Truthy",
@@ -28,6 +31,7 @@ export default class BooleanVal extends AbstractNode {
                 })
             ],
             outputs: [
+                ExecutionOutput.of("run", "Continue"),
                 Output.of({
                     key: "truthy",
                     label: "isTruthy",

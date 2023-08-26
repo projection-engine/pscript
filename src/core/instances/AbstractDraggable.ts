@@ -1,4 +1,3 @@
-import CanvasRenderEngine from "../CanvasRenderEngine";
 import AbstractStateful from "./AbstractStateful";
 
 export default abstract class AbstractDraggable extends AbstractStateful implements IDraggable {

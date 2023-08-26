@@ -4,6 +4,7 @@ import IDraggableUtil from "./IDraggableUtil"
 import AbstractDraggable from "../instances/AbstractDraggable";
 import CanvasRenderEngine from "../CanvasRenderEngine";
 import ExecutionInput from "../instances/ExecutionInput";
+import ExecutionOutput from "../instances/ExecutionOutput";
 
 
 export default class RendererUtil {
@@ -25,57 +26,65 @@ export default class RendererUtil {
     }
 
     static drawInput(node: INodeDraggable, index: number, attribute: IInput) {
-        const ctx = node.__canvas.ctx
-        const state = node.__canvas.getState()
+        if (attribute instanceof ExecutionInput) {
+            this.#drawExecutionIO(attribute, node, index)
+        } else {
+            const ctx = node.__canvas.ctx
+            const state = node.__canvas.getState()
 
-        ctx.font = state.smallFont
-        ctx.strokeStyle = state.borderColor
+            ctx.font = state.smallFont
+            ctx.strokeStyle = state.borderColor
 
-        let label = attribute.label
-        const linePosition = IDraggableUtil.getIOPosition(index, node, false)
+            let label = attribute.label
+            const linePosition = IDraggableUtil.getIOPosition(index, node, false)
 
-        let X = linePosition.x
-        const Y = linePosition.rowY
-        const YA = linePosition.y
+            let X = linePosition.x
+            const Y = linePosition.rowY
+            const YA = linePosition.y
 
-        ctx.beginPath()
-        ctx.fillStyle = IDraggableUtil.getIOColor(attribute, attribute.disabled)
-        ctx.lineWidth = .5
-        ctx.arc(X, YA, AbstractNode.IO_RADIUS, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.stroke()
-        X -= state.smallTextSize
-        ctx.fillStyle = state.ioTextColor
-        let X_P = X + this.#LABEL_OFFSET
-        ctx.fillText(label, X_P, Y - state.smallTextSize / 2)
-        ctx.closePath()
+            ctx.beginPath()
+            ctx.fillStyle = IDraggableUtil.getIOColor(attribute, attribute.disabled)
+            ctx.lineWidth = .5
+            ctx.arc(X, YA, AbstractNode.IO_RADIUS, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.stroke()
+            X -= state.smallTextSize
+            ctx.fillStyle = state.ioTextColor
+            let X_P = X + this.#LABEL_OFFSET
+            ctx.fillText(label, X_P, Y - state.smallTextSize / 2)
+            ctx.closePath()
+        }
     }
 
     static drawOutput(node: INodeDraggable, index: number, attribute: IOutput) {
-        const ctx = node.__canvas.ctx
-        const state = node.__canvas.getState()
+        if (attribute instanceof ExecutionOutput) {
+            this.#drawExecutionIO(attribute, node, index)
+        } else {
+            const ctx = node.__canvas.ctx
+            const state = node.__canvas.getState()
 
-        ctx.font = state.smallFont
-        ctx.strokeStyle = state.borderColor
+            ctx.font = state.smallFont
+            ctx.strokeStyle = state.borderColor
 
-        let label = attribute.label
-        const linePosition = IDraggableUtil.getIOPosition(index, node, true)
+            let label = attribute.label
+            const linePosition = IDraggableUtil.getIOPosition(index, node, true)
 
-        let X = linePosition.x
-        const Y = linePosition.rowY
-        const YA = linePosition.y
-        const labelSize = state.smallTextSize * label.length + this.#LABEL_OFFSET
+            let X = linePosition.x
+            const Y = linePosition.rowY
+            const YA = linePosition.y
+            const labelSize = state.smallTextSize * label.length + this.#LABEL_OFFSET
 
-        ctx.beginPath()
-        ctx.fillStyle = IDraggableUtil.getIOColor(attribute, false)
-        ctx.lineWidth = .5
-        ctx.arc(X, YA, AbstractNode.IO_RADIUS, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.stroke()
-        X -= state.smallTextSize * 2
-        ctx.fillStyle = state.ioTextColor
-        ctx.fillText(label, X - labelSize + this.#LABEL_OFFSET, Y - state.smallTextSize / 2)
-        ctx.closePath()
+            ctx.beginPath()
+            ctx.fillStyle = IDraggableUtil.getIOColor(attribute, false)
+            ctx.lineWidth = .5
+            ctx.arc(X, YA, AbstractNode.IO_RADIUS, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.stroke()
+            X -= state.smallTextSize * 2
+            ctx.fillStyle = state.ioTextColor
+            ctx.fillText(label, X - labelSize + this.#LABEL_OFFSET, Y - state.smallTextSize / 2)
+            ctx.closePath()
+        }
     }
 
     static drawDraggablePosition(ctx: CanvasRenderingContext2D, draggable: IDraggable) {
@@ -135,27 +144,28 @@ export default class RendererUtil {
         ctx.closePath()
     }
 
-    static #drawExecutionIO(ctx: CanvasRenderingContext2D, node: INodeDraggable) {
+    static #drawExecutionIO(io: IInput | IOutput, node: INodeDraggable, index: number) {
+        const ctx = node.__canvas.ctx
         const state = node.__canvas.getState()
-        const coord = node.getTransformedCoordinates()
+        const linePosition = IDraggableUtil.getIOPosition(index, node, false)
+
         ctx.strokeStyle = state.borderColor
         ctx.fillStyle = state.executionIOColor
         ctx.lineWidth = .5
-        if (node instanceof ExecutionInput) {
-            this.drawTriangleIOExecution(coord.y, coord.x + AbstractNode.IO_RADIUS * 3, ctx);
+        if (io instanceof ExecutionInput) {
+            this.drawTriangleIOExecution(linePosition.y, linePosition.x + AbstractNode.IO_RADIUS * 3, ctx);
         } else {
-            this.drawTriangleIOExecution(coord.y, coord.x + node.width - AbstractNode.IO_RADIUS, ctx);
+            this.drawTriangleIOExecution(linePosition.y, linePosition.x + node.width - AbstractNode.IO_RADIUS, ctx);
         }
     }
 
-    private static drawTriangleIOExecution(startY, startX: number, ctx: CanvasRenderingContext2D) {
-        const Y = startY + RendererUtil.#HEADER_LABEL_HEIGHT / 2
+    private static drawTriangleIOExecution(startY: number, startX: number, ctx: CanvasRenderingContext2D) {
         const X = startX - RendererUtil.#EXECUTION_IO_SIZE
 
         ctx.beginPath();
-        ctx.moveTo(startX, Y);
-        ctx.lineTo(X, Y + RendererUtil.#EXECUTION_IO_SIZE);
-        ctx.lineTo(X, Y - RendererUtil.#EXECUTION_IO_SIZE);
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(X, startY + RendererUtil.#EXECUTION_IO_SIZE);
+        ctx.lineTo(X, startY - RendererUtil.#EXECUTION_IO_SIZE);
         ctx.fill();
         ctx.closePath()
         ctx.stroke()

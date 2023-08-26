@@ -1,5 +1,4 @@
 import AbstractLink from "./AbstractLink";
-import PropertyType from "./PropertyType";
 import ExecutionOutput from "./ExecutionOutput";
 import ExecutionInput from "./ExecutionInput";
 

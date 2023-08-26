@@ -1,5 +1,3 @@
-import AbstractLink from "./AbstractLink";
-import AbstractOutput from "./AbstractOutput";
 import AbstractInput from "./AbstractInput";
 
 export default class Input extends AbstractInput {

@@ -1,4 +1,3 @@
-import type CanvasRenderEngine from "../CanvasRenderEngine"
 import AbstractDraggable from "./AbstractDraggable"
 import RendererUtil from "../util/RendererUtil"
 import IDraggableUtil from "../util/IDraggableUtil"

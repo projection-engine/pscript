@@ -1,4 +1,3 @@
-import AbstractLink from "./AbstractLink";
 import AbstractOutput from "./AbstractOutput";
 import PropertyType from "./PropertyType";
 

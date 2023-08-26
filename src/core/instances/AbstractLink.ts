@@ -1,4 +1,3 @@
-import type AbstractNode from "./AbstractNode"
 import Bend from "./Bend";
 
 export default abstract class AbstractLink implements ILink {
