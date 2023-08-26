@@ -14,4 +14,5 @@ export default class Link implements ILink{
 		this.input = tR
 		this.output = sR
 	}
+
 }

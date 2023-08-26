@@ -1,13 +1,39 @@
 import NodeDraggable from "../../../core/instances/NodeDraggable";
 import Input from "../../../core/instances/Input";
 import Output from "../../../core/instances/Output";
-import Types from "../types.enum";
+import Types, {Colors, NodeTypes} from "../javascript.enum";
+import PropertyType from "../../../core/instances/PropertyType";
+import NodeType from "../../../core/instances/NodeType";
 
-export default class BooleanVal extends NodeDraggable{
-    inputs = [
-        new Input("value", "Value", {type: Types.BOOLEAN})
-    ]
-    outputs = [
-        new Output("value", "Value", {type: Types.BOOLEAN})
-    ]
+export default class BooleanVal extends NodeDraggable {
+
+    getInitialProperties(): MutableObject {
+        return {truthy: false};
+    }
+
+    nodeType = NodeType.of(NodeTypes.VAR);
+
+    constructor(props) {
+        super({
+            ...props,
+            inputs: [
+                new Input({
+                    key: "truthy",
+                    label: "Truthy",
+                    accept: [],
+                    disabled: false,
+                    visibleOnNode: false
+                })
+            ],
+            outputs: [
+                new Output({
+                    key: "truthy",
+                    label: "isTruthy",
+                    type: PropertyType.of(Types.BOOLEAN),
+                    disabled: false,
+                    colorRGBA: Colors.BOOLEAN
+                })
+            ]
+        });
+    }
 }

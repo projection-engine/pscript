@@ -24,7 +24,7 @@ export default class RendererUtil {
         ctx.stroke()
     }
 
-    static drawInput(node: NodeDraggable, index: number, attribute: Input) {
+    static drawInput(node: NodeDraggable, index: number, attribute: IInput) {
         const ctx = node.__canvas.ctx
         const state = node.__canvas.getState()
 
@@ -51,7 +51,7 @@ export default class RendererUtil {
         ctx.closePath()
     }
 
-    static drawOutput(node: NodeDraggable, index: number, attribute: Output) {
+    static drawOutput(node: NodeDraggable, index: number, attribute: IOutput) {
         const ctx = node.__canvas.ctx
         const state = node.__canvas.getState()
 
@@ -108,14 +108,12 @@ export default class RendererUtil {
         RendererUtil.drawBezierCurve(ctx, x1, x2, y1, y2)
     }
 
-    static drawTempLink(event: MouseEvent, parentElement, parentBBox, tempLink, canvasAPI: RenderEngine) {
+    static drawTempLink(event: MouseEvent, parentElement, parentBBox: DOMRect, canvasAPI: RenderEngine) {
         const state = canvasAPI.getState()
-        tempLink.x1 = (event.clientX - parentBBox.x + parentElement.scrollLeft) / state.scale
-        tempLink.y1 = (event.clientY - parentBBox.y + parentElement.scrollTop) / state.scale
-
-        canvasAPI.clear()
-        canvasAPI.ctx.strokeStyle = "#0095ff"
-        RendererUtil.drawBezierCurve(canvasAPI.ctx, tempLink.x, tempLink.x1, tempLink.y, tempLink.y1)
+        state.tempLinkCoords.x = (event.clientX - parentBBox.x + parentElement.scrollLeft) / state.scale
+        state.tempLinkCoords.y = (event.clientY - parentBBox.y + parentElement.scrollTop) / state.scale
+        state.drawTempLink = true
+        state.needsUpdate = true
     }
 
     static drawNodeHeader(ctx: CanvasRenderingContext2D, node: AbstractDraggable) {

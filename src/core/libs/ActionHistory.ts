@@ -7,7 +7,7 @@ import UndoRedo from "./UndoRedo";
 
 
 export default class ActionHistory {
-    #cache = new UndoRedo<Action>()
+    #cache = new UndoRedo<IAction>()
     canvas: RenderEngine
 
     clear() {
@@ -46,7 +46,7 @@ export default class ActionHistory {
         }
     }
 
-    #apply(action: Action) {
+    #apply(action: IAction) {
         const {toAdd, toRemove} = action
         this.canvas.removeNodes(toRemove, true)
         if (toAdd)

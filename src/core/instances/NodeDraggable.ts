@@ -6,24 +6,51 @@ import RendererUtil from "../util/RendererUtil"
 import IDraggableUtil from "../util/IDraggableUtil"
 import Output from "./Output";
 import Input from "./Input";
+import NodeType from "./NodeType";
 
 export default abstract class NodeDraggable extends AbstractDraggable implements INodeDraggable {
+    /**
+     * IO will query this map
+     */
+    __properties = new Map<string, any>()
+
     minWidth = 150
     targetCommentID: string | undefined
-    outputs: Output[] = []
-    inputs: Input[] = []
+    #minHeight = HEADER_HEIGHT
+    outputs: IOutput[] = []
+    inputs: IInput[] = []
+    abstract nodeType: NodeType
 
-    constructor(canvas: RenderEngine, x: number, y: number, label: string, colorRGBA: [number, number, number, number]) {
-        super(canvas, x, y, label, colorRGBA)
+    constructor(props: {
+        canvas: RenderEngine,
+        x: number,
+        y: number,
+        label: string,
+        colorRGBA: [number, number, number, number],
+        outputs?: IOutput[]
+        inputs?: IInput[]
+    }) {
+        super(props)
+        this.outputs = props.outputs ?? this.outputs
+        this.inputs = props.inputs ?? this.inputs
         this.height = this.getMinHeight()
-    }
-
-    getMinHeight(): number {
         const q = Math.max(
             this.outputs.length,
             this.inputs.length
         ) + .5
-        return HEADER_HEIGHT + q * (HEADER_HEIGHT - 5)
+        this.#minHeight = this.height = HEADER_HEIGHT + q * (HEADER_HEIGHT - 5)
+    }
+
+    getProperty<T>(key): T {
+        return this.__properties.get(key) as T
+    }
+
+    setProperty(key: string, value: any) {
+        this.__properties.set(key, value)
+    }
+
+    getMinHeight(): number {
+        return this.#minHeight
     }
 
     checkAgainstIO<T>(x: number, y: number, asInput?: boolean): T {
@@ -33,7 +60,7 @@ export default abstract class NodeDraggable extends AbstractDraggable implements
 
         for (let i = 0; i < data.length; i++) {
             let io = data[i];
-            if (asInput && (io as Input).disabled) {
+            if (io.disabled || asInput && !(io as IInput).visibleOnNode) {
                 continue
             }
             const linePosition = IDraggableUtil.getIOPosition(i, this, !asInput)
@@ -58,8 +85,14 @@ export default abstract class NodeDraggable extends AbstractDraggable implements
 
         for (let j = 0; j < this.inputs.length; j++) {
             const C = this.inputs[j]
+            if (!C.visibleOnNode)
+                continue
             RendererUtil.drawInput(this, j, C)
         }
         this.drawScale()
+    }
+
+    getInitialProperties(): MutableObject | undefined {
+        return undefined;
     }
 }

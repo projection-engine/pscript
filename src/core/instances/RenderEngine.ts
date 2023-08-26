@@ -16,7 +16,7 @@ export default class RenderEngine implements IRenderEngine {
     ctx?: CanvasRenderingContext2D
     canvas?: HTMLCanvasElement
     lastSelectionListener?: Function
-    selectionMap = new Map<string, AbstractDraggable>()
+    selectionMap = new Map<string, IDraggable>()
     #lastSelection: AbstractDraggable | undefined
     #frame: number;
     observer
@@ -196,6 +196,12 @@ export default class RenderEngine implements IRenderEngine {
             if (node.isOnDrag)
                 RendererUtil.drawDraggablePosition(ctx, node)
             node.drawToCanvas()
+        }
+
+        if (STATE.drawTempLink) {
+            const coords = STATE.tempLinkCoords
+            ctx.strokeStyle = "#0095ff"
+            RendererUtil.drawBezierCurve(ctx, coords.startX, coords.x, coords.startY, coords.y)
         }
     }
 }

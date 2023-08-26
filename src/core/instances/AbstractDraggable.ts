@@ -1,8 +1,9 @@
 import HEADER_HEIGHT from "../resources/HEADER_HEIGHT"
 import SCALE_BUTTON_SIZE from "../resources/SCALE_BUTTON_SIZE"
 import RenderEngine from "./RenderEngine";
+import AbstractStateful from "./AbstractStateful";
 
-export default abstract class AbstractDraggable implements IDraggable {
+export default abstract class AbstractDraggable extends AbstractStateful implements IDraggable {
     id = crypto.randomUUID()
     isOnDrag = false
     width = 200
@@ -10,15 +11,20 @@ export default abstract class AbstractDraggable implements IDraggable {
     x: number
     y: number
     label: string
-    colorRGBA: [number, number, number, number]
     __canvas: RenderEngine
 
-    protected constructor(canvas: RenderEngine, x: number, y: number, label: string, colorRGBA: [number, number, number, number]) {
-        this.__canvas = canvas
-        this.label = label
-        this.colorRGBA = colorRGBA
-        this.x = x
-        this.y = y
+    protected constructor(props: {
+        canvas: RenderEngine,
+        x: number,
+        y: number,
+        label: string,
+        colorRGBA: [number, number, number, number]
+    }) {
+        super(props.colorRGBA);
+        this.__canvas = props.canvas
+        this.label = props.label
+        this.x = props.x
+        this.y = props.y
     }
 
     getTransformedCoordinates(): { x: number, y: number } {

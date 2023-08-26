@@ -45,35 +45,38 @@ interface ILink {
     bends: IBend[]
 }
 
-interface Action {
+interface IAction {
     toRemove: string[]
     toAdd: MutableObject[]
 }
 
-interface IOType {
+interface IType {
     getType: () => string
 }
 
-interface IO {
-    __properties: Map<string, any>,
-    setProperty: (key: string, value: any) => void,
-    getProperty: <T>(key: string) => T,
-    getColor: () => [number, number, number]
+interface IStateful {
+    __properties: Map<string, any>;
+    setProperty: (key: string, value: any) => void;
+    getProperty: <T>(key: string) => T;
+    colorRGBA: [number, number, number, number];
 }
 
-interface IOutput extends IO {
-    type: IOType;
+interface IOutput extends IStateful {
+    type: IType;
     disabled: boolean;
     label: string
     key: string
 }
 
-interface IInput extends IO {
+interface IInput extends IStateful {
     onChange?: Function,
     label: string,
     key: string,
-    accept: IOType[],
-    disabled: boolean
+    accept: IType[],
+    disabled: boolean,
+    visibleOnNode: boolean
+
+    acceptsType(type: IType): boolean;
 }
 
 
@@ -101,5 +104,12 @@ interface RendererState<T> {
     firstSelectionColor: string,
     multiSelectionColor: string,
     ioTextColor: string,
+    tempLinkCoords: {
+        x: number,
+        y: number,
+        startX: number,
+        startY: number
+    },
+    drawTempLink: boolean
 }
 

@@ -33,7 +33,9 @@ export default class PScriptRendererState {
             smallTextSize: 1,
             firstSelectionColor: "white",
             multiSelectionColor: "darkorange",
-            ioTextColor: "#999"
+            ioTextColor: "#999",
+            tempLinkCoords: {x: 0, y: 0, startY: 0, startX: 0},
+            drawTempLink: false
         })
         return instance
     }

@@ -5,19 +5,23 @@ import RendererUtil from "./RendererUtil";
 import {MaterialDataTypes} from "../pscript.enum";
 import IDraggableUtil from "./IDraggableUtil";
 import AbstractDraggable from "../instances/AbstractDraggable";
+import LocalizationEN from "../resources/LocalizationEN";
+import ToastNotificationSystem from "../../components/alert/ToastNotificationSystem";
+import Link from "../instances/Link";
 
 export default class PScriptUtil {
-    static addComment(canvasAPI: RenderEngine) {
+    /**
+     * Returns dimensions that wrap selected draggables
+     * @param canvasAPI
+     */
+    static getWrappingRect(canvasAPI: RenderEngine): { width: number, height: number } {
         let smallestX: number | undefined,
             smallestY: number | undefined,
             biggestX: number | undefined,
             biggestY: number | undefined
 
-
         canvasAPI.selectionMap
             .forEach(n => {
-                if (n instanceof CommentDraggable)
-                    return
                 if (!smallestX || n.x < smallestX)
                     smallestX = n.x
                 if (!smallestY || n.y < smallestY)
@@ -28,14 +32,13 @@ export default class PScriptUtil {
                 if (!biggestY || n.y + n.height > biggestY)
                     biggestY = n.y + n.height
             })
-
         smallestX -= 4
         smallestY -= 36
 
-        const comment = new CommentDraggable(canvasAPI, Math.max(smallestX, 0), Math.max(smallestY, 0), "New Comment", [155, 155, 155, 1])
-        comment.width = 8 + (biggestX - smallestX)
-        comment.height = 40 + (biggestY - smallestY)
-        canvasAPI.addNode(comment)
+        return {
+            width: 8 + (biggestX - smallestX),
+            height: 40 + (biggestY - smallestY)
+        }
     }
 
 
@@ -56,29 +59,29 @@ export default class PScriptUtil {
     }
 
     static handleLink(canvasAPI: RenderEngine, event: MouseEvent, x: number, y: number, sourceNode: NodeDraggable, sourceIO: IOutput) {
-        // if (!sourceIO || !sourceNode)
-        //     return
-        // const N = canvasAPI.getState().nodes
-        // const X = (event.clientX - x) / state.scale
-        // const Y = (event.clientY - y) / state.scale
-        //
-        // for (let i = N.length - 1; i >= 0; i--) {
-        //     const node = N[i]
-        //     if (node instanceof NodeDraggable) {
-        //         const onBody = node.checkBodyClick(X, Y)
-        //         if (onBody) {
-        //             const targetIO = node.checkAgainstIO<IInput>(X, Y, true)
-        //
-        //             if (targetIO && targetIO.accept.includes(sourceIO.type)) {
-        //                 const newLink = new Link(node, sourceNode, targetIO, sourceIO)
-        //                 canvasAPI.addLink(newLink)
-        //             } else if (targetIO) {
-        //                 ToastNotificationSystem.getInstance().error(LocalizationEN.INVALID_TYPE)
-        //             }
-        //             break
-        //         }
-        //     }
-        // }
+        if (!sourceIO || !sourceNode)
+            return
+        const state = canvasAPI.getState()
+        const N = state.nodes
+        const X = (event.clientX - x) / state.scale
+        const Y = (event.clientY - y) / state.scale
+
+        for (let i = N.length - 1; i >= 0; i--) {
+            const node = N[i]
+            if (node instanceof NodeDraggable) {
+                const onBody = node.checkBodyClick(X, Y)
+                if (onBody) {
+                    const targetIO = node.checkAgainstIO<IInput>(X, Y, true)
+                    if (targetIO?.acceptsType?.(sourceIO.type)) {
+                        const newLink = new Link(node, sourceNode, targetIO, sourceIO)
+                        canvasAPI.addLink(newLink)
+                    } else if (targetIO) {
+                        ToastNotificationSystem.getInstance().error(LocalizationEN.INVALID_TYPE)
+                    }
+                    break
+                }
+            }
+        }
     }
 
     static getNewVector(value, v, index, type) {

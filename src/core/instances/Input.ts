@@ -1,13 +1,38 @@
-import AbstractIO from "./AbstractIO";
+import AbstractStateful from "./AbstractStateful";
 
-export default class Input extends AbstractIO {
+export default class Input extends AbstractStateful implements IInput {
+    getInitialProperties(): MutableObject | undefined {
+        return {};
+    }
+
     key: string;
     label: string;
-    disabled = false
+    disabled: boolean;
+    accept: IType[];
+    /**
+     * Renders input on node
+     */
+    visibleOnNode: boolean;
 
-    constructor(key: string, label: string, properties?: MutableObject) {
-        super(properties);
-        this.key = key;
-        this.label = label;
+    constructor(
+        props: {
+            key: string,
+            label: string,
+            accept: IType[],
+            disabled: boolean,
+            visibleOnNode: boolean,
+            colorRGBA?: [number, number, number, number]
+        }
+    ) {
+        super(props.colorRGBA ?? [255, 255, 255, 1])
+        this.key = props.key;
+        this.visibleOnNode = props.visibleOnNode;
+        this.label = props.label;
+        this.disabled = props.disabled
+        this.accept = props.accept
+    }
+
+    acceptsType(type: IType): boolean {
+        return this.accept.findIndex(a => a.getType() === type.getType()) > -1
     }
 }

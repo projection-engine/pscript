@@ -21,8 +21,11 @@ export default class IDraggableUtil {
         return typesInverted[min]
     }
 
-    static getIOColor(attribute: IO, isSomeoneDisabled: boolean) {
-        return `rgba(${attribute.getColor()},${isSomeoneDisabled ? .5 : 1})`
+    static getIOColor(attribute: IStateful, isSomeoneDisabled: boolean) {
+        const r = attribute.colorRGBA[0],
+            g = attribute.colorRGBA[1],
+            b = attribute.colorRGBA[2]
+        return `rgba(${r}, ${g}, ${b},${isSomeoneDisabled ? .5 : 1})`
     }
 
     static getIOPosition(index: number, node: NodeDraggable, asOutput: boolean): {
@@ -84,7 +87,7 @@ export default class IDraggableUtil {
         }
     }
 
-    static onMouseDownEvent(BBox, IO, tempLink, nodesOnDrag, canvasAPI: RenderEngine, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
+    static onMouseDownEvent(BBox, IO, nodesOnDrag, canvasAPI: RenderEngine, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
         const state = canvasAPI.getState()
         const nodes = <NodeDraggable[]>state.nodes
         const comments = <CommentDraggable[]>state.comments
@@ -120,7 +123,7 @@ export default class IDraggableUtil {
                     } else {
                         const output = node.checkAgainstIO<IOutput>(X, Y)
                         if (output != null) {
-                            this.processOutputClick(IO, node, output, tempLink);
+                            this.processOutputClick(IO, node, output);
                         } else {
                             const input = node.checkAgainstIO<IInput>(X, Y, true)
                             if (!input) {
@@ -132,7 +135,7 @@ export default class IDraggableUtil {
                                 executionBroken = true
                                 break
                             }
-                            this.processInputClick(links, F, IO, canvasAPI, tempLink, event, parentElement, parentBBox);
+                            this.processInputClick(links, F, IO, canvasAPI, event, parentElement, parentBBox);
                         }
                     }
                 }
@@ -158,25 +161,26 @@ export default class IDraggableUtil {
         canvasAPI.clear()
     }
 
-    private static processOutputClick(IO, node: NodeDraggable, output: IOutput, tempLink) {
+    private static processOutputClick(IO, node: NodeDraggable, output: IOutput) {
         IO.node = node
         IO.output = output
         const position = IDraggableUtil.getIOPosition(node.outputs.indexOf(output), node, true)
-        tempLink.x = position.x
-        tempLink.y = position.y
+        const state = node.__canvas.getState()
+        state.tempLinkCoords.startX = position.x
+        state.tempLinkCoords.startY = position.y
     }
 
-    private static processInputClick(links: ILink[], F: number, IO, canvasAPI: RenderEngine, tempLink, event: MouseEvent, parentElement: HTMLElement, parentBBox) {
+    private static processInputClick(links: ILink[], F: number, IO, canvasAPI: RenderEngine, event: MouseEvent, parentElement: HTMLElement, parentBBox) {
         const found = links[F]
         const originalPosition = IDraggableUtil.getIOPosition((<NodeDraggable>found.sourceNode).outputs.indexOf(found.output), <NodeDraggable>found.sourceNode, true)
         IO.node = found.sourceNode
         IO.output = found.output
 
         canvasAPI.removeLink(F)
-
-        tempLink.x = originalPosition.x
-        tempLink.y = originalPosition.y
-        RendererUtil.drawTempLink(event, parentElement, parentBBox, tempLink, canvasAPI)
+        const state = canvasAPI.getState()
+        state.tempLinkCoords.startX = originalPosition.x
+        state.tempLinkCoords.startY = originalPosition.y
+        RendererUtil.drawTempLink(event, parentElement, parentBBox, canvasAPI)
     }
 
     private static processCommentClick(onHeader: boolean, nodesOnDrag, event: MouseEvent, comment: CommentDraggable, parentBBox, X: number, Y: number, canvasAPI: RenderEngine) {
@@ -208,7 +212,6 @@ export default class IDraggableUtil {
             output: undefined
         }
         const parentElement = canvasAPI.canvas.parentElement
-        const tempLink = {x: 0, y: 0, x1: 0, y1: 0}
         const executionState = {
             parentBBox: DOMRect = undefined,
             isOnScroll: false
@@ -217,11 +220,11 @@ export default class IDraggableUtil {
         let totalScrolledX = state.offsetX
         let totalScrolledY = state.offsetY
         const handleMouseMove = (event: MouseEvent) => {
-            IDraggableUtil.onMouseMove(executionState, totalScrolledY, event, totalScrolledX, state, nodesOnDrag, IO, parentElement, tempLink, canvasAPI);
+            IDraggableUtil.onMouseMove(executionState, totalScrolledY, event, totalScrolledX, state, nodesOnDrag, IO, parentElement, canvasAPI);
         }
 
         return (mouseDownEvent: MouseEvent) => {
-            this.executeMouseEvent(mouseDownEvent, canvasAPI, initialClick, executionState, parentElement, IO, tempLink, nodesOnDrag, handleMouseMove);
+            this.executeMouseEvent(mouseDownEvent, canvasAPI, initialClick, executionState, parentElement, IO, nodesOnDrag, handleMouseMove);
         }
     }
 
@@ -232,12 +235,12 @@ export default class IDraggableUtil {
         executionState: { parentBBox: DOMRect; isOnScroll: boolean },
         parentElement: HTMLElement,
         IO: { node?: NodeDraggable; output?: IOutput },
-        tempLink: { x: number; y1: number; y: number; x1: number },
         nodesOnDrag: { onMouseMove: Function; node: AbstractDraggable }[],
         handleMouseMove: (event: MouseEvent) => void
     ) {
         if (mouseDownEvent.target !== canvasAPI.canvas)
             return
+        const state = canvasAPI.getState()
         initialClick.x = mouseDownEvent.clientX
         initialClick.y = mouseDownEvent.clientY
         const BBox = canvasAPI.canvas.getBoundingClientRect()
@@ -245,16 +248,16 @@ export default class IDraggableUtil {
         executionState.isOnScroll = mouseDownEvent.button === 2
 
         if (!executionState.isOnScroll)
-            IDraggableUtil.onMouseDownEvent(BBox, IO, tempLink, nodesOnDrag, canvasAPI, executionState.parentBBox, parentElement, mouseDownEvent)
+            IDraggableUtil.onMouseDownEvent(BBox, IO, nodesOnDrag, canvasAPI, executionState.parentBBox, parentElement, mouseDownEvent)
         document.addEventListener("mousemove", handleMouseMove)
         document.addEventListener("mouseup", mouseUpEvent => {
             if (IO.node !== undefined) PScriptUtil.handleLink(canvasAPI, mouseUpEvent, BBox.x, BBox.y, IO.node, IO.output)
 
             if (executionState.isOnScroll && IDraggableUtil.#checkOffset(mouseUpEvent, initialClick))
-                IDraggableUtil.onMouseDownEvent(BBox, IO, tempLink, nodesOnDrag, canvasAPI, executionState.parentBBox, parentElement, mouseUpEvent)
+                IDraggableUtil.onMouseDownEvent(BBox, IO, nodesOnDrag, canvasAPI, executionState.parentBBox, parentElement, mouseUpEvent)
             IO.node = undefined
             IO.output = undefined
-            tempLink.x = tempLink.y = tempLink.x1 = tempLink.y1 = 0
+            state.tempLinkCoords.x = state.tempLinkCoords.y = state.tempLinkCoords.startX = state.tempLinkCoords.startY = 0
 
             for (let i = 0; i < nodesOnDrag.length; i++) {
                 nodesOnDrag[i].node.isOnDrag = false
@@ -274,7 +277,6 @@ export default class IDraggableUtil {
         nodesOnDrag: { onMouseMove: Function; node: AbstractDraggable }[],
         IO: { node?: NodeDraggable; output?: IOutput },
         parentElement: HTMLElement,
-        tempLink: { x: number; y1: number; y: number; x1: number },
         canvasAPI: RenderEngine
     ) {
         if (executionState.isOnScroll) {
@@ -287,9 +289,9 @@ export default class IDraggableUtil {
             state.needsUpdate = true
         } else {
             const S = nodesOnDrag.length
-            if (IO.node !== undefined)
-                RendererUtil.drawTempLink(event, parentElement, executionState.parentBBox, tempLink, canvasAPI)
-            else if (S > 0) {
+            if (IO.node !== undefined) {
+                RendererUtil.drawTempLink(event, parentElement, executionState.parentBBox, canvasAPI)
+            } else if (S > 0) {
                 for (let i = 0; i < S; i++)
                     nodesOnDrag[i].onMouseMove(event)
                 canvasAPI.clear()

@@ -1,8 +1,11 @@
-export default class AbstractIO implements IO {
+export default abstract class AbstractStateful implements IStateful {
     __properties: Map<string, any>;
+    colorRGBA: [number, number, number, number]
 
-    constructor(properties: MutableObject | undefined) {
+    protected constructor(colorRGBA: [number, number, number, number]) {
+        this.colorRGBA = colorRGBA
         this.__properties = new Map()
+        const properties = this.getInitialProperties()
         if (properties != null) {
             Object.entries(properties).forEach(entry => {
                 this.__properties.set(entry[0], entry[1])
@@ -10,15 +13,13 @@ export default class AbstractIO implements IO {
         }
     }
 
+    abstract getInitialProperties(): MutableObject|undefined
+
     setProperty(key: string, value: any) {
         this.__properties.set(key, value)
     }
 
     getProperty(key: string) {
         return this.__properties.get(key)
-    }
-
-    getColor(): [number, number, number] {
-        return [255, 255, 255];
     }
 }
