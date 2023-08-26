@@ -1,20 +1,22 @@
-import HEADER_HEIGHT from "../resources/HEADER_HEIGHT"
-import SCALE_BUTTON_SIZE from "../resources/SCALE_BUTTON_SIZE"
-import RenderEngine from "./RenderEngine";
+import CanvasRenderEngine from "../CanvasRenderEngine";
 import AbstractStateful from "./AbstractStateful";
 
 export default abstract class AbstractDraggable extends AbstractStateful implements IDraggable {
+    static HEADER_HEIGHT = 25
+    static SCALE_BUTTON_SIZE = 10
+
     id = crypto.randomUUID()
     isOnDrag = false
     width = 200
-    height = HEADER_HEIGHT
+    height = AbstractDraggable.HEADER_HEIGHT
     x: number
     y: number
     label: string
-    __canvas: RenderEngine
+    __canvas: IRenderEngine
+    resizable = true
 
     protected constructor(props: {
-        canvas: RenderEngine,
+        canvas: IRenderEngine,
         x: number,
         y: number,
         label: string,
@@ -33,18 +35,20 @@ export default abstract class AbstractDraggable extends AbstractStateful impleme
     }
 
     checkAgainstScale(x: number, y: number): boolean {
+        if (!this.resizable)
+            return false
         const coord = this.getTransformedCoordinates()
-        const XI = coord.x + this.width - SCALE_BUTTON_SIZE
-        const YI = coord.y + this.height - SCALE_BUTTON_SIZE
+        const XI = coord.x + this.width - AbstractDraggable.SCALE_BUTTON_SIZE
+        const YI = coord.y + this.height - AbstractDraggable.SCALE_BUTTON_SIZE
 
-        const XF = XI + SCALE_BUTTON_SIZE
-        const YF = YI + SCALE_BUTTON_SIZE
+        const XF = XI + AbstractDraggable.SCALE_BUTTON_SIZE
+        const YF = YI + AbstractDraggable.SCALE_BUTTON_SIZE
 
         return x >= XI && x < XF && y >= YI && y < YF
     }
 
     getMinHeight() {
-        return HEADER_HEIGHT
+        return AbstractDraggable.HEADER_HEIGHT
     }
 
     getMinWidth() {
@@ -53,25 +57,27 @@ export default abstract class AbstractDraggable extends AbstractStateful impleme
 
     checkHeaderClick(x: number, y: number): boolean {
         const coord = this.getTransformedCoordinates()
-        return x >= coord.x && x < coord.x + this.width && y >= coord.y && y < coord.y + HEADER_HEIGHT
+        return x >= coord.x && x < coord.x + this.width && y >= coord.y && y < coord.y + AbstractDraggable.HEADER_HEIGHT
     }
 
     checkBodyClick(x: number, y: number): boolean {
         const coord = this.getTransformedCoordinates()
         const XI = coord.x - 4, XF = coord.x + 4 + this.width
-        const YI = coord.y + HEADER_HEIGHT, YF = YI + this.height - HEADER_HEIGHT
+        const YI = coord.y + AbstractDraggable.HEADER_HEIGHT, YF = YI + this.height - AbstractDraggable.HEADER_HEIGHT
         return x >= XI && x < XF && y >= YI && y < YF
     }
 
     drawScale() {
+        if (!this.resizable)
+            return
         const coord = this.getTransformedCoordinates()
         const state = this.__canvas.getState()
         const ctx = this.__canvas.ctx
 
-        const XI = coord.x + this.width - SCALE_BUTTON_SIZE
-        const YI = coord.y + this.height - SCALE_BUTTON_SIZE
+        const XI = coord.x + this.width - AbstractDraggable.SCALE_BUTTON_SIZE
+        const YI = coord.y + this.height - AbstractDraggable.SCALE_BUTTON_SIZE
         ctx.beginPath()
-        ctx.roundRect(XI, YI, SCALE_BUTTON_SIZE, SCALE_BUTTON_SIZE, [0, 0, 3, 0])
+        ctx.roundRect(XI, YI, AbstractDraggable.SCALE_BUTTON_SIZE, AbstractDraggable.SCALE_BUTTON_SIZE, [0, 0, 3, 0])
         ctx.fillStyle = state.borderColor
         ctx.fill()
     }

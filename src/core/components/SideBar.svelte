@@ -2,19 +2,19 @@
 
     import Nodes from "./Nodes.svelte";
     import AttributeEditor from "./AttributeEditor.svelte";
-    import type RenderEngine from "../instances/RenderEngine";
-    import type NodeDraggable from "../instances/NodeDraggable";
-    import CommentDraggable from "../instances/CommentDraggable";
+    import type CanvasRenderEngine from "../CanvasRenderEngine";
+    import type AbstractNode from "../instances/AbstractNode";
+    import Comment from "../instances/Comment";
     import {onDestroy, onMount} from "svelte";
     import LocalizationEN from "../resources/LocalizationEN";
     import Icon from "../../components/icon/Icon.svelte";
     import ResizableBar from "../../components/resizable/ResizableBar.svelte";
 
     export let allNodes:{ label: string, class: string }[]
-    export let scriptCanvas: RenderEngine
+    export let scriptCanvas: CanvasRenderEngine
 
     let tab = 0
-    let mainNode: NodeDraggable | CommentDraggable | undefined
+    let mainNode: AbstractNode | Comment | undefined
 
     onMount(() => {
         scriptCanvas.lastSelectionListener = () => mainNode = scriptCanvas.lastSelection

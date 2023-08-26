@@ -1,11 +1,11 @@
 <script lang="ts">
     import {onDestroy, onMount} from "svelte"
-    import RenderEngine from "./instances/RenderEngine"
+    import CanvasRenderEngine from "./CanvasRenderEngine"
     import PScriptRendererState from "./libs/PScriptRendererState";
     import AbstractDraggable from "./instances/AbstractDraggable";
 
-    export let scriptCanvas: RenderEngine
-    export let allNodes: { label: string, getInstance: (x: number, y: number, canvas: RenderEngine) => typeof AbstractDraggable, class: string }[]
+    export let scriptCanvas: CanvasRenderEngine
+    export let allNodes: { label: string, getInstance: (x: number, y: number, canvas: CanvasRenderEngine) => typeof AbstractDraggable, class: string }[]
 
     let canvasElement
     onMount(() => scriptCanvas.initialize(canvasElement))
@@ -22,7 +22,7 @@
         const y = e.clientY - rect.top - state.offsetY;
         const instance = allNodes.find(n => n.class === nodeId)?.getInstance?.(x, y, scriptCanvas)
         if(instance != null) {
-            scriptCanvas.addNode(instance)
+            scriptCanvas.addDraggable(instance)
         }
     }
 </script>

@@ -1,14 +1,26 @@
-import CommentDraggable from "../../core/instances/CommentDraggable";
+import Comment from "../../core/instances/Comment";
 import Add from "./basic-functions/Add";
 import BooleanVal from "./basic-types/BooleanVal";
 import NumberVal from "./basic-types/NumberVal";
 import {Colors} from "./javascript.enum";
+import Do from "./basic-functions/Do";
 
 export default [
     {
+        label: "Do",
+        class: "Do",
+        getInstance: (x, y, canvas) => new Do({
+            canvas,
+            x,
+            y,
+            label: "Do",
+            colorRGBA: Colors.START
+        })
+    },
+    {
         label: "Comment",
         class: "CommentDraggable",
-        getInstance: (x, y, canvas) => new CommentDraggable({
+        getInstance: (x, y, canvas) => new Comment({
             canvas,
             x,
             y,

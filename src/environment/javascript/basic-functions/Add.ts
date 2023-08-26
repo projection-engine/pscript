@@ -1,4 +1,4 @@
-import NodeDraggable from "../../../core/instances/NodeDraggable";
+import AbstractNode from "../../../core/instances/AbstractNode";
 import Output from "../../../core/instances/Output";
 import Input from "../../../core/instances/Input";
 import Types, {Colors, NodeTypes} from "../javascript.enum";
@@ -6,7 +6,7 @@ import Types, {Colors, NodeTypes} from "../javascript.enum";
 import PropertyType from "../../../core/instances/PropertyType";
 import NodeType from "../../../core/instances/NodeType";
 
-export default class Add extends NodeDraggable {
+export default class Add extends AbstractNode {
     nodeType = NodeType.of(NodeTypes.FUNCTION);
 
     getInitialProperties(): MutableObject {

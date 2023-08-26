@@ -1,11 +1,21 @@
 interface IRenderEngine {
-    observer: ResizeObserver,
-    stop: VoidFunction,
+    lastSelection: IDraggable;
+    selectionMap: Map<string, IDraggable>;
+    observer: ResizeObserver;
+    stop: VoidFunction;
+    ctx: CanvasRenderingContext2D;
 
-    getState(): RendererState<any>
+    getState(): RendererState<any>;
 }
 
-interface IDraggable {
+interface IStateful {
+    __properties: Map<string, any>;
+    setProperty: (key: string, value: any) => void;
+    getProperty: <T>(key: string) => T;
+    colorRGBA: [number, number, number, number];
+}
+
+interface IDraggable extends IStateful {
     y: number;
     x: number;
     height: number;
@@ -13,6 +23,7 @@ interface IDraggable {
     __canvas: IRenderEngine;
     id: string;
     isOnDrag: boolean;
+    label: string;
 
     drawToCanvas(): void;
 
@@ -54,12 +65,6 @@ interface IType {
     getType: () => string
 }
 
-interface IStateful {
-    __properties: Map<string, any>;
-    setProperty: (key: string, value: any) => void;
-    getProperty: <T>(key: string) => T;
-    colorRGBA: [number, number, number, number];
-}
 
 interface IOutput extends IStateful {
     type: IType;
@@ -112,5 +117,6 @@ interface RendererState<T> {
         color: string
     },
     drawTempLink: boolean
+    executionIOColor: string
 }
 

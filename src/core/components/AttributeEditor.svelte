@@ -1,19 +1,19 @@
 <script lang="ts">
     import Attribute from "./Attribute.svelte";
 
-    import type NodeDraggable from "../instances/NodeDraggable";
-    import CommentDraggable from "../instances/CommentDraggable";
+    import type AbstractNode from "../instances/AbstractNode";
+    import Comment from "../instances/Comment";
     import LocalizationEN from "../resources/LocalizationEN";
     import Input from "../../components/input/Input.svelte";
     import ColorPicker from "../../components/color-picker/ColorPicker.svelte";
 
-    export let node: NodeDraggable | CommentDraggable
+    export let node: AbstractNode | Comment
     export let updateCanvas: Function
 
 
     function handleNodeChange(value: any, attr: MutableObject) {
         node[attr.key] = value
-        const input = (node as NodeDraggable).inputs.find(i => i.key === attr.key)
+        const input = (node as AbstractNode).inputs.find(i => i.key === attr.key)
         input.onChange?.(value)
         updateCanvas()
     }
@@ -35,7 +35,7 @@
                         placeholder={LocalizationEN.NAME}
                 />
             </fieldset>
-            {#if node instanceof CommentDraggable}
+            {#if node instanceof Comment}
                 <fieldset>
                     <legend>{LocalizationEN.COLOR}</legend>
                     <ColorPicker

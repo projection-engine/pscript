@@ -1,6 +1,6 @@
-import type RenderEngine from "../instances/RenderEngine"
-import NodeDraggable from "../instances/NodeDraggable"
-import CommentDraggable from "../instances/CommentDraggable"
+import type CanvasRenderEngine from "../CanvasRenderEngine"
+import AbstractNode from "../instances/AbstractNode"
+import Comment from "../instances/Comment"
 import ToastNotificationSystem from "../../components/alert/ToastNotificationSystem";
 import LocalizationEN from "../resources/LocalizationEN";
 import UndoRedo from "./UndoRedo";
@@ -8,18 +8,18 @@ import UndoRedo from "./UndoRedo";
 
 export default class ActionHistory {
     #cache = new UndoRedo<IAction>()
-    canvas: RenderEngine
+    canvas: CanvasRenderEngine
 
     clear() {
         this.#cache.index = 0
         this.#cache.history = [null]
     }
 
-    save(value: (NodeDraggable | CommentDraggable)[], isRemoval?: boolean) {
+    save(value: (AbstractNode | Comment)[], isRemoval?: boolean) {
         // if (value.length === 0)
         //     return
         // const data = value.map(v => {
-            // if (v instanceof NodeDraggable)
+            // if (v instanceof AbstractNode)
             //     return ShaderEditorTools.serializeNode(v)
             // return ShaderEditorTools.serializeComment(v)
         // })
@@ -48,12 +48,12 @@ export default class ActionHistory {
 
     #apply(action: IAction) {
         const {toAdd, toRemove} = action
-        this.canvas.removeNodes(toRemove, true)
+        this.canvas.removeDraggable(toRemove, true)
         if (toAdd)
             for (let i = 0; i < toAdd.length; i++) {
                 const current = toAdd[i]
                 if (current.DATA_TYPE === "comment") {
-                    // const parsed = new CommentDraggable(current.x, current.y)
+                    // const parsed = new Comment(current.x, current.y)
                     // parsed.color = current.color
                     // parsed.name = current.name
                     // parsed.width = current.width

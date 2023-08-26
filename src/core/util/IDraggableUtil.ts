@@ -1,25 +1,11 @@
-import IO_RADIUS from "../resources/IO_RADIUS"
-import HEADER_HEIGHT from "../resources/HEADER_HEIGHT"
-import type AbstractDraggable from "../instances/AbstractDraggable"
-import type NodeDraggable from "../instances/NodeDraggable"
+import AbstractDraggable from "../instances/AbstractDraggable"
+import AbstractNode from "../instances/AbstractNode"
 import RendererUtil from "./RendererUtil";
-import CommentDraggable from "../instances/CommentDraggable";
-import RenderEngine from "../instances/RenderEngine";
+import Comment from "../instances/Comment";
+import CanvasRenderEngine from "../CanvasRenderEngine";
 import PScriptUtil from "./PScriptUtil";
 
-const types = {
-    vec2: 0,
-    vec3: 1,
-    vec4: 2
-}
-const typesInverted = ["vec2", "vec3", "vec4"]
-
 export default class IDraggableUtil {
-
-    static getMinimalType(...typesToCompare): string | undefined {
-        const min = Math.min(...typesToCompare.map(t => types[t]).filter(t => t !== undefined))
-        return typesInverted[min]
-    }
 
     static getIOColor(attribute: IStateful, isSomeoneDisabled: boolean) {
         const r = attribute.colorRGBA[0],
@@ -28,7 +14,7 @@ export default class IDraggableUtil {
         return `rgba(${r}, ${g}, ${b},${isSomeoneDisabled ? .5 : 1})`
     }
 
-    static getIOPosition(index: number, node: NodeDraggable, asOutput: boolean): {
+    static getIOPosition(index: number, node: INodeDraggable, asOutput: boolean): {
         x: number,
         y: number,
         height: number,
@@ -38,10 +24,10 @@ export default class IDraggableUtil {
         const coord = node.getTransformedCoordinates()
 
         const xN = coord.x, yN = coord.y, w = node.width
-        const H = HEADER_HEIGHT - 5
+        const H = AbstractDraggable.HEADER_HEIGHT - 5
         const Y = yN + H * (index + 2)
         const xIO = !asOutput ? xN : xN + w
-        const yIO = Y - IO_RADIUS
+        const yIO = Y - AbstractNode.IO_RADIUS
 
 
         return {x: xIO, y: yIO, height: H, width: w, rowY: Y}
@@ -90,10 +76,10 @@ export default class IDraggableUtil {
     static onMouseDownEvent(BBox: DOMRect, IO: {
         node?: INodeDraggable;
         output?: IOutput
-    }, nodesOnDrag, canvasAPI: RenderEngine, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
+    }, nodesOnDrag, canvasAPI: CanvasRenderEngine, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
         const state = canvasAPI.getState()
-        const nodes = <NodeDraggable[]>state.nodes
-        const comments = <CommentDraggable[]>state.comments
+        const nodes = <AbstractNode[]>state.nodes
+        const comments = <Comment[]>state.comments
         const links = state.links
 
         const X = (event.clientX - BBox.x) / state.scale
@@ -112,39 +98,39 @@ export default class IDraggableUtil {
             const node = nodes[i]
             const onBody = node.checkBodyClick(X, Y)
             const onHeader = node.checkHeaderClick(X, Y)
-            if (onHeader || onBody) {
-                canvasAPI.selectionMap.set(node.id, node)
-                canvasAPI.lastSelection = node
-                if (onHeader) {
-                    nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
+            if (!onHeader && !onBody)
+                continue
+            canvasAPI.selectionMap.set(node.id, node)
+            canvasAPI.lastSelection = node
+            if (onHeader) {
+                nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
+                node.isOnDrag = true
+            } else if (!event.ctrlKey) {
+                const isOnScale = node.checkAgainstScale(X, Y)
+                if (isOnScale) {
+                    nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, false))
                     node.isOnDrag = true
-                } else if (!event.ctrlKey) {
-                    const isOnScale = node.checkAgainstScale(X, Y)
-                    if (isOnScale) {
-                        nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, false))
-                        node.isOnDrag = true
+                } else {
+                    const output = node.checkAgainstIO<IOutput>(X, Y)
+                    if (output != null) {
+                        this.processOutputClick(IO, node, output);
                     } else {
-                        const output = node.checkAgainstIO<IOutput>(X, Y)
-                        if (output != null) {
-                            this.processOutputClick(IO, node, output);
-                        } else {
-                            const input = node.checkAgainstIO<IInput>(X, Y, true)
-                            if (!input) {
-                                executionBroken = true
-                                break
-                            }
-                            const linkIndex = links.findIndex(l => l.input === input)
-                            if (linkIndex === -1) {
-                                executionBroken = true
-                                break
-                            }
-                            this.processInputClick(links, linkIndex, IO, canvasAPI, event, parentElement, parentBBox);
+                        const input = node.checkAgainstIO<IInput>(X, Y, true)
+                        if (!input) {
+                            executionBroken = true
+                            break
                         }
+                        const linkIndex = links.findIndex(l => l.input === input)
+                        if (linkIndex === -1) {
+                            executionBroken = true
+                            break
+                        }
+                        this.processInputClick(links, linkIndex, IO, canvasAPI, event, parentElement, parentBBox);
                     }
                 }
-                executionBroken = true
-                break
             }
+            executionBroken = true
+            break
         }
 
         if (!executionBroken) {
@@ -167,7 +153,7 @@ export default class IDraggableUtil {
     private static processOutputClick(IO: {
         node?: INodeDraggable;
         output?: IOutput
-    }, node: NodeDraggable, output: IOutput) {
+    }, node: AbstractNode, output: IOutput) {
         IO.node = node
         IO.output = output
         const position = IDraggableUtil.getIOPosition(node.outputs.indexOf(output), node, true)
@@ -181,12 +167,12 @@ export default class IDraggableUtil {
         links: ILink[],
         linkIndex: number,
         IO: { node?: INodeDraggable; output?: IOutput },
-        canvasAPI: RenderEngine,
+        canvasAPI: CanvasRenderEngine,
         event: MouseEvent,
         parentElement: HTMLElement,
         parentBBox: DOMRect) {
         const found = links[linkIndex]
-        const originalPosition = IDraggableUtil.getIOPosition((<NodeDraggable>found.sourceNode).outputs.indexOf(found.output), <NodeDraggable>found.sourceNode, true)
+        const originalPosition = IDraggableUtil.getIOPosition((<AbstractNode>found.sourceNode).outputs.indexOf(found.output), <AbstractNode>found.sourceNode, true)
         IO.node = found.sourceNode
         IO.output = found.output
 
@@ -198,7 +184,7 @@ export default class IDraggableUtil {
         RendererUtil.drawTempLink(event, parentElement, parentBBox, canvasAPI)
     }
 
-    private static processCommentClick(onHeader: boolean, nodesOnDrag, event: MouseEvent, comment: CommentDraggable, parentBBox, X: number, Y: number, canvasAPI: RenderEngine) {
+    private static processCommentClick(onHeader: boolean, nodesOnDrag, event: MouseEvent, comment: Comment, parentBBox, X: number, Y: number, canvasAPI: CanvasRenderEngine) {
         if (onHeader) {
             nodesOnDrag.push(IDraggableUtil.drag(event, comment, parentBBox, true))
             comment.isOnDrag = true
@@ -218,11 +204,11 @@ export default class IDraggableUtil {
     }
 
 
-    static getMousedownEvent(canvasAPI: RenderEngine): (this: HTMLCanvasElement, ev: WheelEvent) => void {
+    static getMousedownEvent(canvasAPI: CanvasRenderEngine): (this: HTMLCanvasElement, ev: WheelEvent) => void {
         const state = canvasAPI.getState()
 
         const nodesOnDrag: { onMouseMove: Function, node: AbstractDraggable }[] = []
-        const IO: { node: NodeDraggable | undefined, output: IOutput | undefined } = {
+        const IO: { node: AbstractNode | undefined, output: IOutput | undefined } = {
             node: undefined,
             output: undefined
         }
@@ -244,7 +230,7 @@ export default class IDraggableUtil {
 
     private static executeMouseEvent(
         mouseDownEvent: MouseEvent,
-        canvasAPI: RenderEngine,
+        canvasAPI: CanvasRenderEngine,
         initialClick: { x: number; y: number },
         executionState: { parentBBox: DOMRect; isOnScroll: boolean },
         parentElement: HTMLElement,
@@ -285,18 +271,18 @@ export default class IDraggableUtil {
 
     private static onMouseMove(
         executionState: { isOnScroll: boolean, parentBBox: DOMRect },
-        totalScrolled: {x: number, y: number},
+        totalScrolled: { x: number, y: number },
         event: MouseEvent,
-        state: RendererState<RenderEngine>,
+        state: RendererState<CanvasRenderEngine>,
         nodesOnDrag: { onMouseMove: Function; node: AbstractDraggable }[],
         IO: { node?: INodeDraggable; output?: IOutput },
         parentElement: HTMLElement,
-        canvasAPI: RenderEngine
+        canvasAPI: CanvasRenderEngine
     ) {
         if (executionState.isOnScroll) {
             totalScrolled.y += event.movementY
             totalScrolled.x += event.movementX
-            const G = state.grid/2
+            const G = state.grid / 2
             state.offsetY = Math.round(totalScrolled.y / G) * G
             state.offsetX = Math.round(totalScrolled.x / G) * G
             state.getInstance().canvas.style.backgroundPosition = `${state.offsetX}px ${state.offsetY}px`

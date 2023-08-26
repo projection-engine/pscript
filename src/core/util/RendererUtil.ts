@@ -1,15 +1,17 @@
-import type NodeDraggable from "../instances/NodeDraggable"
-import IO_RADIUS from "../resources/IO_RADIUS"
+import AbstractNode from "../instances/AbstractNode"
 import type Link from "../instances/Link"
-import HEADER_HEIGHT from "../resources/HEADER_HEIGHT"
 import IDraggableUtil from "./IDraggableUtil"
 import AbstractDraggable from "../instances/AbstractDraggable";
-import RenderEngine from "../instances/RenderEngine";
+import CanvasRenderEngine from "../CanvasRenderEngine";
+import RootNode from "../instances/RootNode";
 
 
 export default class RendererUtil {
-
+    static #OFFSET_Y_TITLE = 15
+    static #EXECUTION_IO_SIZE = 7
     static #LABEL_OFFSET = 13
+    static #HEADER_LABEL_HEIGHT = 23
+    static #BORDER_RADIUS = [3, 3, 0, 0]
 
     static drawBezierCurve(ctx: CanvasRenderingContext2D, x1, x2, y1, y2) {
         const diff = Math.abs((x1 - x2) / 2)
@@ -22,7 +24,7 @@ export default class RendererUtil {
         ctx.stroke()
     }
 
-    static drawInput(node: NodeDraggable, index: number, attribute: IInput) {
+    static drawInput(node: INodeDraggable, index: number, attribute: IInput) {
         const ctx = node.__canvas.ctx
         const state = node.__canvas.getState()
 
@@ -39,7 +41,7 @@ export default class RendererUtil {
         ctx.beginPath()
         ctx.fillStyle = IDraggableUtil.getIOColor(attribute, attribute.disabled)
         ctx.lineWidth = .5
-        ctx.arc(X, YA, IO_RADIUS, 0, Math.PI * 2)
+        ctx.arc(X, YA, AbstractNode.IO_RADIUS, 0, Math.PI * 2)
         ctx.fill()
         ctx.stroke()
         X -= state.smallTextSize
@@ -49,7 +51,7 @@ export default class RendererUtil {
         ctx.closePath()
     }
 
-    static drawOutput(node: NodeDraggable, index: number, attribute: IOutput) {
+    static drawOutput(node: INodeDraggable, index: number, attribute: IOutput) {
         const ctx = node.__canvas.ctx
         const state = node.__canvas.getState()
 
@@ -67,7 +69,7 @@ export default class RendererUtil {
         ctx.beginPath()
         ctx.fillStyle = IDraggableUtil.getIOColor(attribute, false)
         ctx.lineWidth = .5
-        ctx.arc(X, YA, IO_RADIUS, 0, Math.PI * 2)
+        ctx.arc(X, YA, AbstractNode.IO_RADIUS, 0, Math.PI * 2)
         ctx.fill()
         ctx.stroke()
         X -= state.smallTextSize * 2
@@ -97,8 +99,8 @@ export default class RendererUtil {
         const coordS = S.getTransformedCoordinates()
         const coordT = T.getTransformedCoordinates()
         const x1 = coordS.x + S.width, x2 = coordT.x,
-            y1 = coordS.y + HEADER_HEIGHT + IO_RADIUS * 3 + S.outputs.indexOf(link.output) * 20,
-            y2 = coordT.y + HEADER_HEIGHT + IO_RADIUS * 3 + T.inputs.indexOf(link.input) * 20
+            y1 = coordS.y + AbstractDraggable.HEADER_HEIGHT + AbstractNode.IO_RADIUS * 3 + S.outputs.indexOf(link.output) * 20,
+            y2 = coordT.y + AbstractDraggable.HEADER_HEIGHT + AbstractNode.IO_RADIUS * 3 + T.inputs.indexOf(link.input) * 20
 
         const isSomeoneDisabled = link.output.disabled || link.input.disabled
         ctx.strokeStyle = IDraggableUtil.getIOColor(link.output, isSomeoneDisabled)
@@ -106,7 +108,7 @@ export default class RendererUtil {
         RendererUtil.drawBezierCurve(ctx, x1, x2, y1, y2)
     }
 
-    static drawTempLink(event: MouseEvent, parentElement, parentBBox: DOMRect, canvasAPI: RenderEngine) {
+    static drawTempLink(event: MouseEvent, parentElement, parentBBox: DOMRect, canvasAPI: CanvasRenderEngine) {
         const state = canvasAPI.getState()
         state.tempLinkCoords.x = (event.clientX - parentBBox.x + parentElement.scrollLeft) / state.scale
         state.tempLinkCoords.y = (event.clientY - parentBBox.y + parentElement.scrollTop) / state.scale
@@ -114,9 +116,9 @@ export default class RendererUtil {
         state.needsUpdate = true
     }
 
-    static drawNodeHeader(ctx: CanvasRenderingContext2D, node: AbstractDraggable) {
+    static drawNodeHeader(ctx: CanvasRenderingContext2D, node: INodeDraggable) {
         const state = node.__canvas.getState()
-
+        const isRootNode = node instanceof RootNode
         const name = node.label
         const color = node.colorRGBA
         const coord = node.getTransformedCoordinates()
@@ -125,14 +127,39 @@ export default class RendererUtil {
         ctx.fillStyle = `rgb(${color})`
         ctx.strokeStyle = node.__canvas.getState().borderColor
         ctx.lineWidth = .5
-        ctx.roundRect(coord.x, coord.y, node.width, 23, [3, 3, 0, 0])
+        ctx.roundRect(coord.x, coord.y, node.width, RendererUtil.#HEADER_LABEL_HEIGHT, RendererUtil.#BORDER_RADIUS)
         ctx.stroke()
         ctx.fill()
         ctx.font = state.defaultFont
 
         ctx.fillStyle = state.textColor
-        ctx.fillText(name, coord.x + IO_RADIUS, coord.y + 15)
+        ctx.fillText(name, coord.x + AbstractNode.IO_RADIUS * (isRootNode ? 1 : 4), coord.y + RendererUtil.#OFFSET_Y_TITLE)
         ctx.closePath()
+        this.#drawExecutionIO(ctx, node)
+    }
+
+    static #drawExecutionIO(ctx: CanvasRenderingContext2D, node: INodeDraggable) {
+        const state = node.__canvas.getState()
+        const coord = node.getTransformedCoordinates()
+        ctx.strokeStyle = state.borderColor
+        ctx.fillStyle = state.executionIOColor
+        ctx.lineWidth = .5
+        if (!(node instanceof RootNode))
+            this.drawTriangleIOExecution(coord.y, coord.x + AbstractNode.IO_RADIUS * 3, ctx);
+        this.drawTriangleIOExecution(coord.y, coord.x + node.width - AbstractNode.IO_RADIUS, ctx);
+    }
+
+    private static drawTriangleIOExecution(startY, startX: number, ctx: CanvasRenderingContext2D) {
+        const Y = startY + RendererUtil.#HEADER_LABEL_HEIGHT / 2
+        const X = startX - RendererUtil.#EXECUTION_IO_SIZE
+
+        ctx.beginPath();
+        ctx.moveTo(startX, Y);
+        ctx.lineTo(X, Y + RendererUtil.#EXECUTION_IO_SIZE);
+        ctx.lineTo(X, Y - RendererUtil.#EXECUTION_IO_SIZE);
+        ctx.fill();
+        ctx.closePath()
+        ctx.stroke()
 
     }
 

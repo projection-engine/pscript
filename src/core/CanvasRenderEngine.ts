@@ -1,26 +1,26 @@
-import RendererUtil from "../util/RendererUtil"
-import NodeDraggable from "./NodeDraggable"
-import type Link from "./Link"
-import CommentDraggable from "./CommentDraggable"
-import ActionHistory from "../libs/ActionHistory"
-import PScriptUtil from "../util/PScriptUtil";
+import RendererUtil from "./util/RendererUtil"
+import AbstractNode from "./instances/AbstractNode"
+import type Link from "./instances/Link"
+import Comment from "./instances/Comment"
+import ActionHistory from "./libs/ActionHistory"
+import PScriptUtil from "./util/PScriptUtil";
 import {UUID} from "crypto";
-import PScriptRendererState from "../libs/PScriptRendererState";
-import AbstractDraggable from "./AbstractDraggable";
-import IDraggableUtil from "../util/IDraggableUtil";
+import PScriptRendererState from "./libs/PScriptRendererState";
+import AbstractDraggable from "./instances/AbstractDraggable";
+import IDraggableUtil from "./util/IDraggableUtil";
 
-export default class RenderEngine implements IRenderEngine {
+export default class CanvasRenderEngine implements IRenderEngine {
     #id: UUID
     #initialized = false
     history = new ActionHistory()
-    ctx?: CanvasRenderingContext2D
-    canvas?: HTMLCanvasElement
+    ctx: CanvasRenderingContext2D
+    canvas: HTMLCanvasElement
     lastSelectionListener?: Function
     selectionMap = new Map<string, IDraggable>()
-    #lastSelection: AbstractDraggable | undefined
+    #lastSelection: IDraggable
     #frame: number;
     observer
-    #state: RendererState<RenderEngine>
+    #state: RendererState<CanvasRenderEngine>
 
     constructor(id: UUID) {
         this.#id = id
@@ -116,26 +116,25 @@ export default class RenderEngine implements IRenderEngine {
         return this.#lastSelection
     }
 
-    set lastSelection(data: AbstractDraggable | undefined) {
+    set lastSelection(data: IDraggable) {
         this.#lastSelection = data
         this.lastSelectionListener?.()
     }
 
-    addNode(node: AbstractDraggable, noSerialization?: boolean, noUpdate?: boolean) {
+    addDraggable(node: IDraggable) {
         // if (!noSerialization) {
         //     this.history.save([node], true)
         //     this.history.save([node])
         // }
-        if (node instanceof CommentDraggable) {
+        if (node instanceof Comment) {
             this.#state.comments.push(node)
         } else {
             this.#state.nodes.push(node)
         }
-        if (!noUpdate)
-            this.clear()
+        this.clear()
     }
 
-    removeNodes(toRemove: AbstractDraggable[], noSerialization?: boolean) {
+    removeDraggable(toRemove: AbstractDraggable[]) {
         // if (!noSerialization) {
         //     const mapped = STATE.nodes.filter(e => toRemove.includes(e.id))
         //     this.history.save(mapped)
@@ -143,7 +142,7 @@ export default class RenderEngine implements IRenderEngine {
         // }
         for (let i = 0; i < toRemove.length; i++) {
             const draggable = toRemove[i];
-            if (draggable instanceof NodeDraggable) {
+            if (draggable instanceof AbstractNode) {
                 const index = this.#state.nodes.indexOf(draggable)
                 if (index > -1) {
                     this.#state.nodes.splice(index, 1)

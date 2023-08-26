@@ -1,25 +1,25 @@
-import IO_RADIUS from "../resources/IO_RADIUS"
-import HEADER_HEIGHT from "../resources/HEADER_HEIGHT"
-import type RenderEngine from "./RenderEngine"
+import type CanvasRenderEngine from "../CanvasRenderEngine"
 import AbstractDraggable from "./AbstractDraggable"
 import RendererUtil from "../util/RendererUtil"
 import IDraggableUtil from "../util/IDraggableUtil"
 import NodeType from "./NodeType";
 
-export default abstract class NodeDraggable extends AbstractDraggable implements INodeDraggable {
+export default abstract class AbstractNode extends AbstractDraggable implements INodeDraggable {
+    static IO_RADIUS = 4
+
+
     /**
      * IO will query this map
      */
     __properties = new Map<string, any>()
-
-    #minHeight = HEADER_HEIGHT
+    #minHeight = AbstractDraggable.HEADER_HEIGHT
     outputs: IOutput[] = []
     inputs: IInput[] = []
     abstract nodeType: NodeType
 
 
-    protected constructor(props: {
-        canvas: RenderEngine,
+    constructor(props: {
+        canvas: IRenderEngine,
         x: number,
         y: number,
         label: string,
@@ -35,7 +35,7 @@ export default abstract class NodeDraggable extends AbstractDraggable implements
             this.outputs.length,
             this.inputs.length
         ) + .5
-        this.#minHeight = this.height = HEADER_HEIGHT + q * (HEADER_HEIGHT - 5)
+        this.#minHeight = this.height = AbstractDraggable.HEADER_HEIGHT + q * (AbstractDraggable.HEADER_HEIGHT - 5)
     }
 
     getProperty<T>(key): T {
@@ -51,7 +51,7 @@ export default abstract class NodeDraggable extends AbstractDraggable implements
     }
 
     checkAgainstIO<T>(x: number, y: number, asInput?: boolean): T {
-        const R2 = IO_RADIUS ** 2
+        const R2 = AbstractNode.IO_RADIUS ** 2
         const data = asInput ? this.inputs : this.outputs
 
 
@@ -73,18 +73,18 @@ export default abstract class NodeDraggable extends AbstractDraggable implements
     drawToCanvas() {
         const ctx = this.__canvas.ctx
         RendererUtil.drawRoundedRect(ctx, this, 3, this.__canvas.selectionMap.get(this.id) !== undefined, this.__canvas.lastSelection === this, this.__canvas.getState().rectColor)
-        RendererUtil.drawNodeHeader(ctx, this)
+        RendererUtil.drawNodeHeader(ctx, <INodeDraggable>this)
 
         for (let j = 0; j < this.outputs.length; j++) {
             const C = this.outputs[j]
-            RendererUtil.drawOutput(this, j, C)
+            RendererUtil.drawOutput(<INodeDraggable>this, j, C)
         }
 
         for (let j = 0; j < this.inputs.length; j++) {
             const C = this.inputs[j]
             if (!C.visibleOnNode)
                 continue
-            RendererUtil.drawInput(this, j, C)
+            RendererUtil.drawInput(<INodeDraggable>this, j, C)
         }
         this.drawScale()
     }

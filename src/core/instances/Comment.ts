@@ -1,11 +1,11 @@
-import type RenderEngine from "./RenderEngine"
+import type CanvasRenderEngine from "../CanvasRenderEngine"
 import RendererUtil from "../util/RendererUtil"
 import AbstractDraggable from "./AbstractDraggable"
 
 
-export default class CommentDraggable extends AbstractDraggable implements ICommentDraggable{
+export default class Comment extends AbstractDraggable implements ICommentDraggable{
     constructor(props: {
-        canvas: RenderEngine,
+        canvas: CanvasRenderEngine,
         x: number,
         y: number,
         label: string,

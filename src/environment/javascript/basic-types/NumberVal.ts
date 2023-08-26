@@ -1,11 +1,11 @@
-import NodeDraggable from "../../../core/instances/NodeDraggable";
+import AbstractNode from "../../../core/instances/AbstractNode";
 import Input from "../../../core/instances/Input";
 import Output from "../../../core/instances/Output";
 import Types, {Colors, NodeTypes} from "../javascript.enum";
 import PropertyType from "../../../core/instances/PropertyType";
 import NodeType from "../../../core/instances/NodeType";
 
-export default class NumberVal extends NodeDraggable {
+export default class NumberVal extends AbstractNode {
     nodeType = NodeType.of(NodeTypes.VAR);
 
     getInitialProperties(): MutableObject {

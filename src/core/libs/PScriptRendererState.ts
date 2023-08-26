@@ -1,16 +1,16 @@
 import DynamicMap from "./DynamicMap";
 import {UUID} from "crypto";
-import RenderEngine from "../instances/RenderEngine";
+import CanvasRenderEngine from "../CanvasRenderEngine";
 
 export default class PScriptRendererState {
-    static #state = new DynamicMap<UUID, RendererState<RenderEngine>>()
+    static #state = new DynamicMap<UUID, RendererState<CanvasRenderEngine>>()
 
     static getState(id: UUID) {
         return this.#state.get(id)
     }
 
     static createState(id: UUID) {
-        const instance = new RenderEngine(id)
+        const instance = new CanvasRenderEngine(id)
         this.#state.set(id, {
             offsetX: 0,
             offsetY: 0,
@@ -35,7 +35,8 @@ export default class PScriptRendererState {
             multiSelectionColor: "darkorange",
             ioTextColor: "#e0e0e0",
             tempLinkCoords: {x: 0, y: 0, startY: 0, startX: 0, color: "white"},
-            drawTempLink: false
+            drawTempLink: false,
+            executionIOColor: "white"
         })
         return instance
     }

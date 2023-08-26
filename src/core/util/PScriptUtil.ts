@@ -1,5 +1,5 @@
-import RenderEngine from "../instances/RenderEngine";
-import NodeDraggable from "../instances/NodeDraggable";
+import CanvasRenderEngine from "../CanvasRenderEngine";
+import AbstractNode from "../instances/AbstractNode";
 import {MaterialDataTypes} from "../pscript.enum";
 import LocalizationEN from "../resources/LocalizationEN";
 import ToastNotificationSystem from "../../components/alert/ToastNotificationSystem";
@@ -10,7 +10,7 @@ export default class PScriptUtil {
      * Returns dimensions that wrap selected draggables
      * @param canvasAPI
      */
-    static getWrappingRect(canvasAPI: RenderEngine): { width: number, height: number } {
+    static getWrappingRect(canvasAPI: CanvasRenderEngine): { width: number, height: number } {
         let smallestX: number | undefined,
             smallestY: number | undefined,
             biggestX: number | undefined,
@@ -38,7 +38,7 @@ export default class PScriptUtil {
     }
 
 
-    static getCanvasZoomEvent(canvasAPI: RenderEngine): (this: HTMLCanvasElement, ev: WheelEvent) => void {
+    static getCanvasZoomEvent(canvasAPI: CanvasRenderEngine): (this: HTMLCanvasElement, ev: WheelEvent) => void {
         let localScale = 1
         const state = canvasAPI.getState()
         return e => {
@@ -54,7 +54,7 @@ export default class PScriptUtil {
         }
     }
 
-    static handleLink(canvasAPI: RenderEngine, event: MouseEvent, x: number, y: number, sourceNode: INodeDraggable, sourceIO: IOutput) {
+    static handleLink(canvasAPI: CanvasRenderEngine, event: MouseEvent, x: number, y: number, sourceNode: INodeDraggable, sourceIO: IOutput) {
         if (!sourceIO || !sourceNode)
             return
         const state = canvasAPI.getState()
@@ -64,12 +64,12 @@ export default class PScriptUtil {
 
         for (let i = N.length - 1; i >= 0; i--) {
             const node = N[i]
-            if (node instanceof NodeDraggable) {
+            if (node instanceof AbstractNode) {
                 const onBody = node.checkBodyClick(X, Y)
                 if (onBody) {
                     const targetIO = node.checkAgainstIO<IInput>(X, Y, true)
                     if (targetIO?.acceptsType?.(sourceIO.type)) {
-                        const newLink = new Link(node, <NodeDraggable>sourceNode, targetIO, sourceIO)
+                        const newLink = new Link(node, <AbstractNode>sourceNode, targetIO, sourceIO)
                         canvasAPI.addLink(newLink)
                     } else if (targetIO) {
                         ToastNotificationSystem.getInstance().error(LocalizationEN.INVALID_TYPE)
