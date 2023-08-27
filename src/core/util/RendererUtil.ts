@@ -27,7 +27,7 @@ export default class RendererUtil {
 
     static drawInput(node: INodeDraggable, index: number, attribute: IInput) {
         const linePosition = IDraggableUtil.getIOPosition(index, node, false)
-        const ctx = node.__canvas.ctx
+        const ctx = node.__canvas.__ctx
         const state = node.__canvas.getState()
         let X = linePosition.x
         const Y = linePosition.rowY
@@ -62,7 +62,7 @@ export default class RendererUtil {
 
     static drawOutput(node: INodeDraggable, index: number, attribute: IOutput) {
         const linePosition = IDraggableUtil.getIOPosition(index, node, true)
-        const ctx = node.__canvas.ctx
+        const ctx = node.__canvas.__ctx
         const state = node.__canvas.getState()
         let X = linePosition.x
         const Y = linePosition.rowY

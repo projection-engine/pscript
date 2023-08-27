@@ -87,9 +87,9 @@ export default class IDraggableUtil {
 
         if (!event.ctrlKey) {
             canvasAPI.lastSelection = undefined
-            canvasAPI.selectionMap.clear()
+            canvasAPI.__selectionMap.clear()
         } else
-            canvasAPI.selectionMap.forEach(node => {
+            canvasAPI.__selectionMap.forEach(node => {
                 nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
             })
         let executionBroken = false
@@ -100,7 +100,7 @@ export default class IDraggableUtil {
             const onHeader = node.checkHeaderClick(X, Y)
             if (!onHeader && !onBody)
                 continue
-            canvasAPI.selectionMap.set(node.id, node)
+            canvasAPI.__selectionMap.set(node.id, node)
             canvasAPI.lastSelection = node
             if (onHeader) {
                 nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
@@ -146,7 +146,7 @@ export default class IDraggableUtil {
         }
 
         if (nodesOnDrag.length > 0 || IO.node !== undefined)
-            canvasAPI.ctx.canvas.style.cursor = "grabbing"
+            canvasAPI.__ctx.canvas.style.cursor = "grabbing"
         canvasAPI.clear()
     }
 
@@ -193,7 +193,7 @@ export default class IDraggableUtil {
                 comment.isOnDrag = true
             }
         }
-        canvasAPI.selectionMap.set(comment.id, comment)
+        canvasAPI.__selectionMap.set(comment.id, comment)
         canvasAPI.lastSelection = comment
     }
 
@@ -203,87 +203,71 @@ export default class IDraggableUtil {
 
 
     static getMousedownEvent(canvasAPI: CanvasRenderEngine): (this: HTMLCanvasElement, ev: WheelEvent) => void {
-        const state = canvasAPI.getState()
 
         const nodesOnDrag: { onMouseMove: Function, node: AbstractDraggable }[] = []
         const IO: { node: AbstractNode | undefined, output: IOutput | undefined } = {
             node: undefined,
             output: undefined
         }
-        const parentElement = canvasAPI.canvas.parentElement
+        const parentElement = canvasAPI.__canvas.parentElement
         const executionState = {
             parentBBox: DOMRect = undefined,
             isOnScroll: false
         }
-        const initialClick = {x: 0, y: 0}
-        const totalScrolled = {x: state.offsetX, y: state.offsetY}
-        const handleMouseMove = (event: MouseEvent) => {
-            IDraggableUtil.onMouseMove(executionState, totalScrolled, event, state, nodesOnDrag, IO, parentElement, canvasAPI);
-        }
-
         return (mouseDownEvent: MouseEvent) => {
-            this.executeMouseEvent(mouseDownEvent, canvasAPI, initialClick, executionState, parentElement, IO, nodesOnDrag, handleMouseMove);
-        }
-    }
-
-    private static executeMouseEvent(
-        mouseDownEvent: MouseEvent,
-        canvasAPI: CanvasRenderEngine,
-        initialClick: { x: number; y: number },
-        executionState: { parentBBox: DOMRect; isOnScroll: boolean },
-        parentElement: HTMLElement,
-        IO: { node?: INodeDraggable; output?: IOutput },
-        nodesOnDrag: { onMouseMove: Function; node: AbstractDraggable }[],
-        handleMouseMove: (event: MouseEvent) => void
-    ) {
-        if (mouseDownEvent.target !== canvasAPI.canvas)
-            return
-        const state = canvasAPI.getState()
-        initialClick.x = mouseDownEvent.clientX
-        initialClick.y = mouseDownEvent.clientY
-        const BBox = canvasAPI.canvas.getBoundingClientRect()
-        executionState.parentBBox = parentElement.getBoundingClientRect()
-        executionState.isOnScroll = mouseDownEvent.button === 2
-
-        if (!executionState.isOnScroll)
-            IDraggableUtil.onMouseDownEvent(BBox, IO, nodesOnDrag, canvasAPI, executionState.parentBBox, parentElement, mouseDownEvent)
-        document.addEventListener("mousemove", handleMouseMove)
-        document.addEventListener("mouseup", mouseUpEvent => {
-            if (IO.node !== undefined) PScriptUtil.handleLink(canvasAPI, mouseUpEvent, BBox.x, BBox.y, IO.node, IO.output)
-
-            if (executionState.isOnScroll && IDraggableUtil.#checkOffset(mouseUpEvent, initialClick))
-                IDraggableUtil.onMouseDownEvent(BBox, IO, nodesOnDrag, canvasAPI, executionState.parentBBox, parentElement, mouseUpEvent)
-            IO.node = undefined
-            IO.output = undefined
-            state.tempLinkCoords.x = state.tempLinkCoords.y = state.tempLinkCoords.startX = state.tempLinkCoords.startY = 0
-
-            for (let i = 0; i < nodesOnDrag.length; i++) {
-                nodesOnDrag[i].node.isOnDrag = false
+            if (mouseDownEvent.target !== canvasAPI.__canvas)
+                return
+            const {offsetX, offsetY} = canvasAPI.getState()
+            const totalScrolled = {x: offsetX, y: offsetY}
+            const handleMouseMove = (event: MouseEvent) => {
+                IDraggableUtil.onMouseMove(executionState, totalScrolled, event, nodesOnDrag, IO, parentElement, canvasAPI);
             }
-            nodesOnDrag.length = 0
-            document.removeEventListener("mousemove", handleMouseMove)
-            canvasAPI.clear()
-            canvasAPI.canvas.style.cursor = "default"
-        }, {once: true})
+            const initialClick = {x: mouseDownEvent.clientX, y: mouseDownEvent.clientY}
+            const BBox = canvasAPI.__canvas.getBoundingClientRect()
+            executionState.parentBBox = parentElement.getBoundingClientRect()
+            executionState.isOnScroll = mouseDownEvent.button === 2
+
+            if (!executionState.isOnScroll)
+                IDraggableUtil.onMouseDownEvent(BBox, IO, nodesOnDrag, canvasAPI, executionState.parentBBox, parentElement, mouseDownEvent)
+            document.addEventListener("mousemove", handleMouseMove)
+            document.addEventListener("mouseup", mouseUpEvent => {
+                if (IO.node !== undefined) PScriptUtil.handleLink(canvasAPI, mouseUpEvent, BBox.x, BBox.y, IO.node, IO.output)
+
+                if (executionState.isOnScroll && IDraggableUtil.#checkOffset(mouseUpEvent, initialClick))
+                    IDraggableUtil.onMouseDownEvent(BBox, IO, nodesOnDrag, canvasAPI, executionState.parentBBox, parentElement, mouseUpEvent)
+                IO.node = undefined
+                IO.output = undefined
+                const state = canvasAPI.getState()
+                state.tempLinkCoords.x = state.tempLinkCoords.y = state.tempLinkCoords.startX = state.tempLinkCoords.startY = 0
+
+                for (let i = 0; i < nodesOnDrag.length; i++) {
+                    nodesOnDrag[i].node.isOnDrag = false
+                }
+                nodesOnDrag.length = 0
+                document.removeEventListener("mousemove", handleMouseMove)
+                canvasAPI.clear()
+                canvasAPI.__canvas.style.cursor = "default"
+            }, {once: true})
+        }
     }
 
     private static onMouseMove(
         executionState: { isOnScroll: boolean, parentBBox: DOMRect },
         totalScrolled: { x: number, y: number },
         event: MouseEvent,
-        state: RendererState<CanvasRenderEngine>,
         nodesOnDrag: { onMouseMove: Function; node: AbstractDraggable }[],
         IO: { node?: INodeDraggable; output?: IOutput },
         parentElement: HTMLElement,
         canvasAPI: CanvasRenderEngine
     ) {
+        const state = canvasAPI.getState()
         if (executionState.isOnScroll) {
             totalScrolled.y += event.movementY
             totalScrolled.x += event.movementX
             const G = state.grid / 2
             state.offsetY = Math.round(totalScrolled.y / G) * G
             state.offsetX = Math.round(totalScrolled.x / G) * G
-            state.getInstance().canvas.style.backgroundPosition = `${state.offsetX}px ${state.offsetY}px`
+            state.getInstance().__canvas.style.backgroundPosition = `${state.offsetX}px ${state.offsetY}px`
             state.needsUpdate = true
         } else {
             const S = nodesOnDrag.length

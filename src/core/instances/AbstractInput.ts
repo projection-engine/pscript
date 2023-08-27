@@ -1,7 +1,16 @@
 import AbstractStateful from "./AbstractStateful";
 
-export default abstract class AbstractInput extends AbstractStateful implements IInput {
+export default abstract class AbstractInput extends AbstractStateful<{
+    key: string;
+    label: string;
+    accept: IType[];
+    disabled: boolean;
+    visibleOnNode: boolean;
+    hideLabel?: boolean;
+    colorRGBA?: [number, number, number, number];
+}> implements IInput {
     hideLabel: boolean = false;
+
     getInitialProperties(): MutableObject | undefined {
         return {};
     }
@@ -15,18 +24,8 @@ export default abstract class AbstractInput extends AbstractStateful implements 
      */
     visibleOnNode: boolean;
 
-    constructor(
-        props: {
-            key: string;
-            label: string;
-            accept: IType[];
-            disabled: boolean;
-            visibleOnNode: boolean;
-            hideLabel?: boolean;
-            colorRGBA?: [number, number, number, number];
-        }
-    ) {
-        super(props.colorRGBA ?? [255, 255, 255, 1])
+    from(props) {
+        super.fromValue(props.colorRGBA ?? [255, 255, 255, 1])
         this.hideLabel = props.hideLabel ?? false
 
         this.key = props.key;

@@ -16,7 +16,7 @@ export default class PScriptUtil {
             biggestX: number | undefined,
             biggestY: number | undefined
 
-        canvasAPI.selectionMap
+        canvasAPI.__selectionMap
             .forEach(n => {
                 if (!smallestX || n.x < smallestX)
                     smallestX = n.x
@@ -49,7 +49,7 @@ export default class PScriptUtil {
                 localScale -= localScale * .1
 
             state.scale = localScale
-            canvasAPI.canvas.style.backgroundSize = `${20 * localScale}px ${20 * localScale}px`
+            canvasAPI.__canvas.style.backgroundSize = `${20 * localScale}px ${20 * localScale}px`
             canvasAPI.clear()
         }
     }

@@ -8,14 +8,16 @@ export default class Do extends AbstractNode {
     width = 50
     resizable = false
 
-    constructor(props) {
-        super({
+    static of(props: NodeProps) {
+        const instance = new Do()
+        instance.from({
             ...props,
             inputs: [],
             outputs: [
                 ExecutionOutput.of("run", "Start", true),
             ]
         });
+        return instance
     }
 
 }

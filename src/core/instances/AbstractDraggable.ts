@@ -1,10 +1,17 @@
 import AbstractStateful from "./AbstractStateful";
+import uuid from "uuidv4"
 
-export default abstract class AbstractDraggable extends AbstractStateful implements IDraggable {
+export default abstract class AbstractDraggable extends AbstractStateful<{
+    canvas: IRenderEngine,
+    x: number,
+    y: number,
+    label: string,
+    colorRGBA: [number, number, number, number]
+}> implements IDraggable {
     static HEADER_HEIGHT = 25
     static SCALE_BUTTON_SIZE = 10
 
-    id = crypto.randomUUID()
+    id = uuid()
     isOnDrag = false
     width = 200
     height = AbstractDraggable.HEADER_HEIGHT
@@ -14,14 +21,8 @@ export default abstract class AbstractDraggable extends AbstractStateful impleme
     __canvas: IRenderEngine
     resizable = true
 
-    protected constructor(props: {
-        canvas: IRenderEngine,
-        x: number,
-        y: number,
-        label: string,
-        colorRGBA: [number, number, number, number]
-    }) {
-        super(props.colorRGBA);
+    from(props) {
+        super.fromValue(props.colorRGBA);
         this.__canvas = props.canvas
         this.label = props.label
         this.x = props.x
@@ -71,7 +72,7 @@ export default abstract class AbstractDraggable extends AbstractStateful impleme
             return
         const coord = this.getTransformedCoordinates()
         const state = this.__canvas.getState()
-        const ctx = this.__canvas.ctx
+        const ctx = this.__canvas.__ctx
 
         const XI = coord.x + this.width - AbstractDraggable.SCALE_BUTTON_SIZE
         const YI = coord.y + this.height - AbstractDraggable.SCALE_BUTTON_SIZE

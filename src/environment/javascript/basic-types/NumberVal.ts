@@ -14,8 +14,9 @@ export default class NumberVal extends AbstractNode {
         return {value: 0};
     }
 
-    constructor(props) {
-        super({
+    static of(props: NodeProps) {
+        const instance = new NumberVal()
+        instance.from({
             ...props,
             inputs: [
                 ExecutionInput.of("run", "Continue"),
@@ -38,7 +39,7 @@ export default class NumberVal extends AbstractNode {
                 })
             ]
         });
-
+        return instance
     }
 
 }

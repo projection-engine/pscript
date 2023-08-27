@@ -1,11 +1,13 @@
-export default class AbstractType implements IType {
-    __type: string
+import AbstractSerializable from "./AbstractSerializable";
+
+export default class AbstractType extends AbstractSerializable<{type: string}> implements IType {
+    _type: string
 
     getType(): string {
-        return this.__type;
+        return this._type;
     }
 
-    constructor(type: string) {
-        this.__type = type
+    from(props) {
+        this._type = props.type
     }
 }

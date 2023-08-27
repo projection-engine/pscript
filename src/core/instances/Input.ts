@@ -9,6 +9,8 @@ export default class Input extends AbstractInput {
         visibleOnNode: boolean,
         colorRGBA?: [number, number, number, number]
     }) {
-        return new Input(props)
+        const instance = new Input()
+        instance.from(props)
+        return instance
     }
 }

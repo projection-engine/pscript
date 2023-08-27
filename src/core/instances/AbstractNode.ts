@@ -19,16 +19,8 @@ export default abstract class AbstractNode extends AbstractDraggable implements 
     abstract nodeType: NodeType
 
 
-    constructor(props: {
-        canvas: IRenderEngine,
-        x: number,
-        y: number,
-        label: string,
-        colorRGBA: [number, number, number, number],
-        outputs?: IOutput[]
-        inputs?: IInput[]
-    }) {
-        super(props)
+    from(props: NodeProps) {
+        super.from(props)
         this.outputs = props.outputs ?? this.outputs
         this.inputs = props.inputs ?? this.inputs
         this.height = this.getMinHeight()
@@ -65,7 +57,7 @@ export default abstract class AbstractNode extends AbstractDraggable implements 
             let isValid = false
             const linePosition = IDraggableUtil.getIOPosition(i, this, !asInput)
             if (io instanceof ExecutionInput) {
-                const startX = linePosition.x  + AbstractNode.IO_RADIUS * 3
+                const startX = linePosition.x + AbstractNode.IO_RADIUS * 3
                 const positions = AbstractNode.#getTrianglePoints(startX, linePosition.y)
                 isValid = AbstractNode.#isPointInsideTriangle(x, y, positions)
             } else if (io instanceof ExecutionOutput) {
@@ -101,8 +93,8 @@ export default abstract class AbstractNode extends AbstractDraggable implements 
     }
 
     drawToCanvas() {
-        const ctx = this.__canvas.ctx
-        RendererUtil.drawRoundedRect(ctx, this, 3, this.__canvas.selectionMap.get(this.id) !== undefined, this.__canvas.lastSelection === this, this.__canvas.getState().rectColor)
+        const ctx = this.__canvas.__ctx
+        RendererUtil.drawRoundedRect(ctx, this, 3, this.__canvas.__selectionMap.get(this.id) !== undefined, this.__canvas.lastSelection === this, this.__canvas.getState().rectColor)
         RendererUtil.drawDraggableHeader(ctx, this)
 
         for (let j = 0; j < this.outputs.length; j++) {

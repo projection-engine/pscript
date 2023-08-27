@@ -1,15 +1,14 @@
 import DynamicMap from "./DynamicMap";
-import {UUID} from "crypto";
 import CanvasRenderEngine from "../CanvasRenderEngine";
 
 export default class PScriptRendererState {
-    static #state = new DynamicMap<UUID, RendererState<CanvasRenderEngine>>()
+    static #state = new DynamicMap<string, RendererState<CanvasRenderEngine>>()
 
-    static getState(id: UUID) {
+    static getState(id: string) {
         return this.#state.get(id)
     }
 
-    static createState(id: UUID) {
+    static createState(id: string) {
         const instance = new CanvasRenderEngine(id)
         this.#state.set(id, {
             offsetX: 0,
@@ -41,15 +40,19 @@ export default class PScriptRendererState {
         return instance
     }
 
-    static destroyState(id: UUID) {
+    static destroyState(id: string) {
         if (!this.#state.has(id))
             return
         const state = this.#state.get(id)
         state.getInstance().stop()
-        state.getInstance().observer.disconnect()
+        state.getInstance().__observer.disconnect()
 
 
         this.#state.delete(id)
     }
 
+    static setState(canvas: CanvasRenderEngine, canvasRenderEngineRendererState: RendererState<CanvasRenderEngine>) {
+        this.#state.delete(canvas.getId())
+        this.#state.set(canvas.getId(), canvasRenderEngineRendererState)
+    }
 }
