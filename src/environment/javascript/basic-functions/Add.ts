@@ -15,8 +15,9 @@ export default class Add extends AbstractNode {
         return {truthy: false};
     }
 
-    constructor(props) {
-        super({
+    static of(props: NodeProps) {
+        const instance = new Add()
+        instance.from({
             ...props,
             inputs: [
                 ExecutionInput.of("run", "Continue"),
@@ -52,5 +53,6 @@ export default class Add extends AbstractNode {
                 })
             ]
         });
+        return instance
     }
 }

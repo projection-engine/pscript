@@ -8,6 +8,8 @@ export default class Output extends AbstractOutput {
         disabled: boolean
         colorRGBA?: [number, number, number, number]
     }){
-        return new Output(props)
+        const instance = new Output()
+        instance.from(props)
+        return instance
     }
 }

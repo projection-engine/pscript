@@ -15,8 +15,9 @@ export default class BooleanVal extends AbstractNode {
 
     nodeType = NodeType.of(NodeTypes.VAR);
 
-    constructor(props) {
-        super({
+    static of(props: NodeProps) {
+        const instance = new BooleanVal()
+        instance.from({
             ...props,
             inputs: [
                 ExecutionInput.of("run", "Continue"),
@@ -39,5 +40,6 @@ export default class BooleanVal extends AbstractNode {
                 })
             ]
         });
+        return instance
     }
 }

@@ -4,42 +4,44 @@ import type AbstractLink from "./instances/AbstractLink"
 import Comment from "./instances/Comment"
 import ActionHistory from "./libs/ActionHistory"
 import PScriptUtil from "./util/PScriptUtil";
-import {UUID} from "crypto";
 import PScriptRendererState from "./libs/PScriptRendererState";
 import AbstractDraggable from "./instances/AbstractDraggable";
 import IDraggableUtil from "./util/IDraggableUtil";
 
 export default class CanvasRenderEngine implements IRenderEngine {
-    #id: UUID
+    #id: string
     #initialized = false
-    history = new ActionHistory()
-    ctx: CanvasRenderingContext2D
-    canvas: HTMLCanvasElement
-    lastSelectionListener?: Function
-    selectionMap = new Map<string, IDraggable>()
+    //history = new ActionHistory()
+    __ctx: CanvasRenderingContext2D
+    __canvas: HTMLCanvasElement
+    __lastSelectionListener?: Function
+    __selectionMap = new Map<string, IDraggable>()
     #lastSelection: IDraggable
     #frame: number;
-    observer
+    __observer
     #state: RendererState<CanvasRenderEngine>
 
-    constructor(id: UUID) {
+    constructor(id: string) {
         this.#id = id
-        this.history.canvas = this
+        // this.history.canvas = this
     }
 
-    getState() {
+    getState(): RendererState<CanvasRenderEngine> {
         return this.#state ?? (this.#state = PScriptRendererState.getState(this.getId()))
+    }
+
+    clearState() {
+        this.#state = undefined
     }
 
     initialize(canvas: HTMLCanvasElement) {
         if (this.#initialized)
             return
         this.#initialized = true
-        this.canvas = canvas
-        this.ctx = canvas.getContext("2d")
-        this.findTextDimensions();
+        this.__canvas = canvas
+        this.__ctx = canvas.getContext("2d")
 
-        this.observer = new ResizeObserver(() => {
+        this.__observer = new ResizeObserver(() => {
             const bBox = canvas.parentElement.getBoundingClientRect()
             canvas.width = bBox.width
             canvas.height = bBox.height
@@ -47,26 +49,34 @@ export default class CanvasRenderEngine implements IRenderEngine {
             canvas.style.height = bBox.height + "px"
             this.#state.needsUpdate = true
         })
-        this.observer.observe(canvas.parentElement)
+        this.__observer.observe(canvas.parentElement)
 
         canvas.addEventListener("contextmenu", e => e.preventDefault())
         canvas.addEventListener("mousedown", IDraggableUtil.getMousedownEvent(this))
         canvas.addEventListener("wheel", PScriptUtil.getCanvasZoomEvent(this), {passive: false})
-        this.clear()
-        this.#frame = requestAnimationFrame(() => this.#loop())
+        this.start()
     }
 
     private findTextDimensions() {
         const state = this.getState()
-        this.ctx.font = state.defaultFont
-        state.defaultTextSize = this.ctx.measureText("T").width
+        this.__ctx.font = state.defaultFont
+        state.defaultTextSize = this.__ctx.measureText("T").width
 
-        this.ctx.font = state.smallFont
-        state.smallTextSize = this.ctx.measureText("T").width
+        this.__ctx.font = state.smallFont
+        state.smallTextSize = this.__ctx.measureText("T").width
+    }
+
+    start() {
+        if (this.#frame)
+            return
+        this.clear()
+        this.findTextDimensions()
+        this.#frame = requestAnimationFrame(() => this.#loop())
     }
 
     stop() {
         cancelAnimationFrame(this.#frame)
+        this.#frame = undefined
     }
 
     #loop() {
@@ -74,10 +84,10 @@ export default class CanvasRenderEngine implements IRenderEngine {
         if (!STATE)
             return;
         if (STATE.needsUpdate) {
-            const ctx = this.ctx
+            const ctx = this.__ctx
             if (!ctx)
                 return
-            const canvas = this.canvas
+            const canvas = this.__canvas
             const scale = STATE.scale || .01
 
             ctx.setTransform(1, 0, 0, 1, 0, 0)
@@ -118,7 +128,7 @@ export default class CanvasRenderEngine implements IRenderEngine {
 
     set lastSelection(data: IDraggable) {
         this.#lastSelection = data
-        this.lastSelectionListener?.()
+        this.__lastSelectionListener?.()
     }
 
     addDraggable(node: IDraggable) {
@@ -126,10 +136,11 @@ export default class CanvasRenderEngine implements IRenderEngine {
         //     this.history.save([node], true)
         //     this.history.save([node])
         // }
+        const state = this.getState()
         if (node instanceof Comment) {
-            this.#state.comments.push(node)
+            state.comments.push(node)
         } else {
-            this.#state.nodes.push(<AbstractNode>node)
+            state.nodes.push(<AbstractNode>node)
         }
         this.clear()
     }
@@ -165,7 +176,7 @@ export default class CanvasRenderEngine implements IRenderEngine {
     }
 
     #draw() {
-        const ctx = this.ctx
+        const ctx = this.__ctx
         const STATE = this.#getState()
         const links = STATE.links
         const nodes = STATE.nodes

@@ -1,17 +1,24 @@
 import Bend from "./Bend";
+import AbstractSerializable from "./AbstractSerializable";
 
-export default abstract class AbstractLink implements ILink {
+
+export default abstract class AbstractLink extends AbstractSerializable<{
+    target: INodeDraggable,
+    source: INodeDraggable,
+    tR: IInput,
+    sR: IOutput
+}> implements ILink {
     input: IInput
     output: IOutput
     targetNode: INodeDraggable
     sourceNode: INodeDraggable
     bends: Bend[]
 
-    protected constructor(target: INodeDraggable, source: INodeDraggable, tR: IInput, sR: IOutput) {
-        this.targetNode = target
-        this.sourceNode = source
-        this.input = tR
-        this.output = sR
+    from(props) {
+        // TODO - REMOVE NODE REF
+        this.targetNode = props.target
+        this.sourceNode = props.source
+        this.input = props.tR
+        this.output = props.sR
     }
-
 }

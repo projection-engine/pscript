@@ -1,14 +1,36 @@
+interface ISerializable<T> {
+    from(props: T)
+}
+
+type NodeProps = {
+    canvas: IRenderEngine;
+    x: number;
+    y: number;
+    label: string;
+    colorRGBA: [number, number, number, number];
+    outputs?: IOutput[];
+    inputs?: IInput[];
+}
+
+type CommentProps = {
+    canvas: IRenderEngine;
+    x: number;
+    y: number;
+    label: string;
+    colorRGBA: [number, number, number, number];
+}
+
 interface IRenderEngine {
     lastSelection: IDraggable;
-    selectionMap: Map<string, IDraggable>;
-    observer: ResizeObserver;
+    __selectionMap: Map<string, IDraggable>;
+    __observer: ResizeObserver;
     stop: VoidFunction;
-    ctx: CanvasRenderingContext2D;
+    __ctx: CanvasRenderingContext2D;
 
     getState(): RendererState<any>;
 }
 
-interface IStateful {
+interface IStateful extends ISerializable<any>{
     __properties: Map<string, any>;
     setProperty: (key: string, value: any) => void;
     getProperty: <T>(key: string) => T;
@@ -51,7 +73,7 @@ interface IBend {
     y: number
 }
 
-interface ILink {
+interface ILink extends ISerializable<any>{
     input: IInput,
     output: IOutput,
     targetNode: INodeDraggable,

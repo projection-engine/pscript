@@ -3,7 +3,8 @@ import PropertyType from "./PropertyType";
 
 export default class ExecutionInput extends AbstractInput {
     static of(key: string, label: string, showLabel?: boolean) {
-        return new ExecutionInput({
+        const instance = new ExecutionInput()
+        instance.from({
             visibleOnNode: true,
             key,
             label,
@@ -12,5 +13,6 @@ export default class ExecutionInput extends AbstractInput {
             colorRGBA: [255, 255, 255, 1],
             hideLabel: !showLabel
         })
+        return instance
     }
 }

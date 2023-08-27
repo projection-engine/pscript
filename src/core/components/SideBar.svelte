@@ -15,11 +15,11 @@
     let mainNode: IDraggable
 
     onMount(() => {
-        scriptCanvas.lastSelectionListener = () => mainNode = scriptCanvas.lastSelection
+        scriptCanvas.__lastSelectionListener = () => mainNode = scriptCanvas.lastSelection
     })
 
     onDestroy(() => {
-        scriptCanvas.lastSelectionListener = undefined
+        scriptCanvas.__lastSelectionListener = undefined
     })
 
 </script>

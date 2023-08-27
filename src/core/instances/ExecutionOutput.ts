@@ -3,7 +3,8 @@ import PropertyType from "./PropertyType";
 
 export default class ExecutionOutput extends AbstractOutput {
     static of(key: string, label: string, showLabel?: boolean) {
-        return new ExecutionOutput({
+        const instance =  new ExecutionOutput()
+        instance.from({
             key,
             label,
             type: PropertyType.of("EXECUTION-OUTPUT"),
@@ -11,5 +12,6 @@ export default class ExecutionOutput extends AbstractOutput {
             disabled: false,
             colorRGBA: [255, 255, 255, 1]
         })
+        return instance
     }
 }

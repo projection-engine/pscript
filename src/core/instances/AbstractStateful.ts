@@ -1,8 +1,10 @@
-export default abstract class AbstractStateful implements IStateful {
+import AbstractSerializable from "./AbstractSerializable";
+
+export default abstract class AbstractStateful<T> extends AbstractSerializable<T> implements IStateful {
     __properties: Map<string, any>;
     colorRGBA: [number, number, number, number]
 
-    protected constructor(colorRGBA: [number, number, number, number]) {
+    protected fromValue(colorRGBA: [number, number, number, number] ) {
         this.colorRGBA = colorRGBA
         this.__properties = new Map()
         const properties = this.getInitialProperties()
@@ -13,7 +15,7 @@ export default abstract class AbstractStateful implements IStateful {
         }
     }
 
-    abstract getInitialProperties(): MutableObject|undefined
+    abstract getInitialProperties(): MutableObject | undefined
 
     setProperty(key: string, value: any) {
         this.__properties.set(key, value)
