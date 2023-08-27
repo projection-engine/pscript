@@ -3,14 +3,14 @@ import RendererUtil from "../util/RendererUtil"
 import AbstractDraggable from "./AbstractDraggable"
 
 
-export default class Comment extends AbstractDraggable implements ICommentDraggable {
-    static of(props: CommentProps) {
-        const instance = new Comment()
+export default class CommentDraggable extends AbstractDraggable implements ICommentDraggable {
+    static of(props: AbstractDraggableProps) {
+        const instance = new CommentDraggable()
         instance.from(props)
         return instance
     }
 
-    from(props: CommentProps) {
+    from(props: AbstractDraggableProps) {
         super.from(props)
         this.height = 200
     }

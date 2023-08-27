@@ -2,11 +2,11 @@
     import Attribute from "./Attribute.svelte";
 
     import type AbstractNode from "../instances/AbstractNode";
-    import Comment from "../instances/Comment";
+    import CommentDraggable from "../instances/CommentDraggable";
     import LocalizationEN from "../resources/LocalizationEN";
     import ColorPicker from "../../components/color-picker/ColorPicker.svelte";
 
-    export let node: AbstractNode | Comment
+    export let node: AbstractNode | CommentDraggable
     export let updateCanvas: Function
 
 
@@ -34,7 +34,7 @@
                         placeholder={LocalizationEN.NAME}
                 />
             </fieldset>
-            {#if node instanceof Comment}
+            {#if node instanceof CommentDraggable}
                 <fieldset>
                     <legend>{LocalizationEN.COLOR}</legend>
                     <ColorPicker

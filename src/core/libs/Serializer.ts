@@ -1,5 +1,5 @@
 import AbstractStateful from "../instances/AbstractStateful";
-import Comment from "../instances/Comment"
+import CommentDraggable from "../instances/CommentDraggable"
 import PropertyType from "../instances/PropertyType";
 import NodeType from "../instances/NodeType";
 import Output from "../instances/Output";
@@ -15,7 +15,7 @@ import AbstractDraggable from "../instances/AbstractDraggable";
 
 export default class Serializer {
     static #types: typeof AbstractSerializable<any>[] = [
-        Comment,
+        CommentDraggable,
         ExecutionInput,
         ExecutionOutput,
         ExecutionLink,

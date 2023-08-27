@@ -1,7 +1,7 @@
 import RendererUtil from "./util/RendererUtil"
 import AbstractNode from "./instances/AbstractNode"
 import type AbstractLink from "./instances/AbstractLink"
-import Comment from "./instances/Comment"
+import CommentDraggable from "./instances/CommentDraggable"
 import ActionHistory from "./libs/ActionHistory"
 import PScriptUtil from "./util/PScriptUtil";
 import PScriptRendererState from "./libs/PScriptRendererState";
@@ -137,7 +137,7 @@ export default class CanvasRenderEngine implements IRenderEngine {
         //     this.history.save([node])
         // }
         const state = this.getState()
-        if (node instanceof Comment) {
+        if (node instanceof CommentDraggable) {
             state.comments.push(node)
         } else {
             state.nodes.push(<AbstractNode>node)

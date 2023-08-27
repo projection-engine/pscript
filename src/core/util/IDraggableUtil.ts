@@ -1,7 +1,7 @@
 import AbstractDraggable from "../instances/AbstractDraggable"
 import AbstractNode from "../instances/AbstractNode"
 import RendererUtil from "./RendererUtil";
-import Comment from "../instances/Comment";
+import CommentDraggable from "../instances/CommentDraggable";
 import CanvasRenderEngine from "../CanvasRenderEngine";
 import PScriptUtil from "./PScriptUtil";
 
@@ -79,7 +79,7 @@ export default class IDraggableUtil {
     }, nodesOnDrag, canvasAPI: CanvasRenderEngine, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
         const state = canvasAPI.getState()
         const nodes = <AbstractNode[]>state.nodes
-        const comments = <Comment[]>state.comments
+        const comments = <CommentDraggable[]>state.comments
         const links = state.links
 
         const X = (event.clientX - BBox.x) / state.scale
@@ -182,7 +182,7 @@ export default class IDraggableUtil {
         RendererUtil.drawTempLink(event, parentElement, parentBBox, canvasAPI)
     }
 
-    private static processCommentClick(onHeader: boolean, nodesOnDrag, event: MouseEvent, comment: Comment, parentBBox, X: number, Y: number, canvasAPI: CanvasRenderEngine) {
+    private static processCommentClick(onHeader: boolean, nodesOnDrag, event: MouseEvent, comment: CommentDraggable, parentBBox, X: number, Y: number, canvasAPI: CanvasRenderEngine) {
         if (onHeader) {
             nodesOnDrag.push(IDraggableUtil.drag(event, comment, parentBBox, true))
             comment.isOnDrag = true

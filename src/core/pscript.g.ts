@@ -12,7 +12,7 @@ type NodeProps = {
     inputs?: IInput[];
 }
 
-type CommentProps = {
+type AbstractDraggableProps = {
     canvas: IRenderEngine;
     x: number;
     y: number;

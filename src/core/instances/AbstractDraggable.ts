@@ -1,13 +1,7 @@
 import AbstractStateful from "./AbstractStateful";
 import uuid from "uuidv4"
 
-export default abstract class AbstractDraggable extends AbstractStateful<{
-    canvas: IRenderEngine,
-    x: number,
-    y: number,
-    label: string,
-    colorRGBA: [number, number, number, number]
-}> implements IDraggable {
+export default abstract class AbstractDraggable extends AbstractStateful<AbstractDraggableProps> implements IDraggable {
     static HEADER_HEIGHT = 25
     static SCALE_BUTTON_SIZE = 10
 
