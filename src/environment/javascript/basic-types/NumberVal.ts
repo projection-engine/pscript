@@ -1,6 +1,4 @@
 import AbstractNode from "../../../core/instances/AbstractNode";
-import AbstractInput from "../../../core/instances/AbstractInput";
-import AbstractOutput from "../../../core/instances/AbstractOutput";
 import Types, {Colors, NodeTypes} from "../javascript.enum";
 import PropertyType from "../../../core/instances/PropertyType";
 import NodeType from "../../../core/instances/NodeType";

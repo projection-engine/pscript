@@ -74,10 +74,11 @@ interface IOutput extends IStateful {
     disabled: boolean;
     label: string
     key: string
+    hideLabel: boolean;
 }
 
 interface IInput extends IStateful {
-    onChange?: Function,
+    hideLabel: boolean;
     label: string,
     key: string,
     accept: IType[],

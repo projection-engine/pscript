@@ -1,5 +1,5 @@
 import AbstractNode from "../../../core/instances/AbstractNode";
-import Types, {Colors, NodeTypes} from "../javascript.enum";
+import {NodeTypes} from "../javascript.enum";
 import NodeType from "../../../core/instances/NodeType";
 import ExecutionOutput from "../../../core/instances/ExecutionOutput";
 
@@ -13,7 +13,7 @@ export default class Do extends AbstractNode {
             ...props,
             inputs: [],
             outputs: [
-                ExecutionOutput.of("run", "Start"),
+                ExecutionOutput.of("run", "Start", true),
             ]
         });
     }

@@ -2,6 +2,8 @@ import AbstractDraggable from "./AbstractDraggable"
 import RendererUtil from "../util/RendererUtil"
 import IDraggableUtil from "../util/IDraggableUtil"
 import NodeType from "./NodeType";
+import ExecutionOutput from "./ExecutionOutput";
+import ExecutionInput from "./ExecutionInput";
 
 export default abstract class AbstractNode extends AbstractDraggable implements INodeDraggable {
     static IO_RADIUS = 4
@@ -49,6 +51,7 @@ export default abstract class AbstractNode extends AbstractDraggable implements 
         return this.#minHeight
     }
 
+
     checkAgainstIO<T>(x: number, y: number, asInput?: boolean): T {
         const R2 = AbstractNode.IO_RADIUS ** 2
         const data = asInput ? this.inputs : this.outputs
@@ -59,14 +62,42 @@ export default abstract class AbstractNode extends AbstractDraggable implements 
             if (io.disabled || asInput && !(io as IInput).visibleOnNode) {
                 continue
             }
+            let isValid = false
             const linePosition = IDraggableUtil.getIOPosition(i, this, !asInput)
-            const xIO = linePosition.x
-            const yIO = linePosition.y
-
-            if ((x - xIO) ** 2 + (y - yIO) ** 2 < R2) {
-                return <T>io
+            if (io instanceof ExecutionInput) {
+                const startX = linePosition.x  + AbstractNode.IO_RADIUS * 3
+                const positions = AbstractNode.#getTrianglePoints(startX, linePosition.y)
+                isValid = AbstractNode.#isPointInsideTriangle(x, y, positions)
+            } else if (io instanceof ExecutionOutput) {
+                const positions = AbstractNode.#getTrianglePoints(linePosition.x - AbstractNode.IO_RADIUS, linePosition.y)
+                isValid = AbstractNode.#isPointInsideTriangle(x, y, positions)
+            } else {
+                isValid = ((x - linePosition.x) ** 2 + (y - linePosition.y) ** 2 < R2)
             }
+            if (isValid)
+                return <T>io
         }
+    }
+
+    static #areaOfTriangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number) {
+        return Math.abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0);
+    }
+
+    static #isPointInsideTriangle(x: number, y: number, positions: [number, number, number, number, number, number]): boolean {
+        const x1 = positions[0], y1 = positions[1],
+            x2 = positions[2], y2 = positions[3],
+            x3 = positions[4], y3 = positions[5]
+
+        const A = AbstractNode.#areaOfTriangle(x1, y1, x2, y2, x3, y3);
+        const A1 = AbstractNode.#areaOfTriangle(x, y, x2, y2, x3, y3);
+        const A2 = AbstractNode.#areaOfTriangle(x1, y1, x, y, x3, y3);
+        const A3 = AbstractNode.#areaOfTriangle(x1, y1, x2, y2, x, y);
+        return (A === A1 + A2 + A3);
+    }
+
+    static #getTrianglePoints(startX: number, startY: number): [number, number, number, number, number, number] {
+        const X = startX - RendererUtil.EXECUTION_IO_SIZE
+        return [startX, startY, X, startY + RendererUtil.EXECUTION_IO_SIZE, X, startY - RendererUtil.EXECUTION_IO_SIZE]
     }
 
     drawToCanvas() {

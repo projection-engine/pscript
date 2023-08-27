@@ -69,7 +69,7 @@ export default class PScriptUtil {
                 if (onBody) {
                     const targetIO = node.checkAgainstIO<IInput>(X, Y, true)
                     if (targetIO?.acceptsType?.(sourceIO.type)) {
-                        const newLink = new Link(node, sourceNode, targetIO, sourceIO)
+                        const newLink = Link.of(node, sourceNode, targetIO, sourceIO)
                         canvasAPI.addLink(newLink)
                     } else if (targetIO) {
                         ToastNotificationSystem.getInstance().error(LocalizationEN.INVALID_TYPE)
