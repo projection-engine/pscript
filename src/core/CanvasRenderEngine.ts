@@ -4,21 +4,18 @@ import type AbstractLink from "./instances/AbstractLink"
 import CommentDraggable from "./instances/CommentDraggable"
 import ActionHistory from "./libs/ActionHistory"
 import PScriptUtil from "./util/PScriptUtil";
-import PScriptRendererState from "./libs/PScriptRendererState";
+import CanvasStateManager from "./libs/CanvasStateManager";
 import AbstractDraggable from "./instances/AbstractDraggable";
 import IDraggableUtil from "./util/IDraggableUtil";
+import SelectionStore from "./libs/SelectionStore";
 
 export default class CanvasRenderEngine implements IRenderEngine {
     #id: string
     #initialized = false
-    //history = new ActionHistory()
     __ctx: CanvasRenderingContext2D
     __canvas: HTMLCanvasElement
-    __lastSelectionListener?: Function
-    __selectionMap = new Map<string, IDraggable>()
-    #lastSelection: IDraggable
     #frame: number;
-    __observer
+    __observer: ResizeObserver
     #state: RendererState<CanvasRenderEngine>
 
     constructor(id: string) {
@@ -27,11 +24,16 @@ export default class CanvasRenderEngine implements IRenderEngine {
     }
 
     getState(): RendererState<CanvasRenderEngine> {
-        return this.#state ?? (this.#state = PScriptRendererState.getState(this.getId()))
+        return this.#state ?? (this.#state = CanvasStateManager.getState(this.getId()))
     }
 
     clearState() {
         this.#state = undefined
+        SelectionStore.updateStore({
+            selected: new Map<string, IDraggable>(),
+            lastSelection: undefined,
+            focusedFunction: undefined
+        })
     }
 
     initialize(canvas: HTMLCanvasElement) {
@@ -104,7 +106,7 @@ export default class CanvasRenderEngine implements IRenderEngine {
     }
 
     #getState() {
-        return PScriptRendererState.getState(this.getId())
+        return CanvasStateManager.getState(this.getId())
     }
 
     addLink(link: AbstractLink, noUpdate?: boolean) {
@@ -120,15 +122,6 @@ export default class CanvasRenderEngine implements IRenderEngine {
     removeLink(index: number) {
         this.#state.links.splice(index, 1)
         this.clear()
-    }
-
-    get lastSelection() {
-        return this.#lastSelection
-    }
-
-    set lastSelection(data: IDraggable) {
-        this.#lastSelection = data
-        this.__lastSelectionListener?.()
     }
 
     addDraggable(node: IDraggable) {
@@ -151,8 +144,13 @@ export default class CanvasRenderEngine implements IRenderEngine {
         //     this.history.save(mapped)
         //     this.history.save(mapped, true)
         // }
+        const focusedFunction = SelectionStore.getData().focusedFunction
         for (let i = 0; i < toRemove.length; i++) {
             const draggable = toRemove[i];
+            SelectionStore.getSelectionMap().delete(draggable.id)
+            if(focusedFunction === draggable.id){
+                SelectionStore.updateStore({focusedFunction: undefined})
+            }
             if (draggable instanceof AbstractNode) {
                 const index = this.#state.nodes.indexOf(draggable)
                 if (index > -1) {

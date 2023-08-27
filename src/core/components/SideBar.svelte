@@ -7,19 +7,22 @@
     import LocalizationEN from "../resources/LocalizationEN";
     import Icon from "../../components/icon/Icon.svelte";
     import ResizableBar from "../../components/resizable/ResizableBar.svelte";
+    import uuid from "uuidv4";
+    import SelectionStore from "../libs/SelectionStore";
 
     export let allNodes:{ label: string, class: string }[]
     export let scriptCanvas: CanvasRenderEngine
 
     let tab = 0
     let mainNode: IDraggable
+    const COMPONENT_ID = uuid()
 
     onMount(() => {
-        scriptCanvas.__lastSelectionListener = () => mainNode = scriptCanvas.lastSelection
+        SelectionStore.getInstance().addListener(COMPONENT_ID, data => mainNode = data.lastSelection, ["lastSelection"])
     })
 
     onDestroy(() => {
-        scriptCanvas.__lastSelectionListener = undefined
+        SelectionStore.getInstance().removeListener(COMPONENT_ID)
     })
 
 </script>

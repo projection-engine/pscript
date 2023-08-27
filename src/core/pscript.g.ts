@@ -21,8 +21,6 @@ type AbstractDraggableProps = {
 }
 
 interface IRenderEngine {
-    lastSelection: IDraggable;
-    __selectionMap: Map<string, IDraggable>;
     __observer: ResizeObserver;
     stop: VoidFunction;
     __ctx: CanvasRenderingContext2D;

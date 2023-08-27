@@ -1,7 +1,7 @@
 <script lang="ts">
     import {onDestroy, onMount} from "svelte"
     import CanvasRenderEngine from "./CanvasRenderEngine"
-    import PScriptRendererState from "./libs/PScriptRendererState";
+    import CanvasStateManager from "./libs/CanvasStateManager";
     import AbstractDraggable from "./instances/AbstractDraggable";
 
     export let scriptCanvas: CanvasRenderEngine
@@ -10,7 +10,7 @@
     let canvasElement
     onMount(() => scriptCanvas.initialize(canvasElement))
     onDestroy(() => {
-        PScriptRendererState.destroyState(scriptCanvas.getId())
+        CanvasStateManager.destroyState(scriptCanvas.getId())
     })
 
     function onDrop(e: DragEvent) {

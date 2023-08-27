@@ -4,6 +4,8 @@ import RendererUtil from "./RendererUtil";
 import CommentDraggable from "../instances/CommentDraggable";
 import CanvasRenderEngine from "../CanvasRenderEngine";
 import PScriptUtil from "./PScriptUtil";
+import FunctionDraggable from "../instances/FunctionDraggable";
+import SelectionStore from "../libs/SelectionStore";
 
 export default class IDraggableUtil {
 
@@ -86,12 +88,14 @@ export default class IDraggableUtil {
         const Y = (event.clientY - BBox.y) / state.scale
 
         if (!event.ctrlKey) {
-            canvasAPI.lastSelection = undefined
-            canvasAPI.__selectionMap.clear()
-        } else
-            canvasAPI.__selectionMap.forEach(node => {
+            SelectionStore.updateStore({lastSelection: undefined})
+            SelectionStore.getSelectionMap().clear()
+        } else {
+            SelectionStore.getSelectionMap().forEach(node => {
                 nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
             })
+        }
+
         let executionBroken = false
 
         for (let i = nodes.length - 1; i >= 0; i--) {
@@ -100,11 +104,19 @@ export default class IDraggableUtil {
             const onHeader = node.checkHeaderClick(X, Y)
             if (!onHeader && !onBody)
                 continue
-            canvasAPI.__selectionMap.set(node.id, node)
-            canvasAPI.lastSelection = node
+            const isFunctionNode = node instanceof FunctionDraggable
+            if(isFunctionNode){
+                SelectionStore.updateStore({focusedFunction: node.id})
+            }
+            SelectionStore.getSelectionMap().set(node.id, node)
+            SelectionStore.updateStore({lastSelection: node})
             if (onHeader) {
-                nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
-                node.isOnDrag = true
+                if (isFunctionNode && node.checkAgainstCollapse(X, Y)) {
+                    node.collapsed = !node.collapsed
+                } else {
+                    nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
+                    node.isOnDrag = true
+                }
             } else if (!event.ctrlKey) {
                 const isOnScale = node.checkAgainstScale(X, Y)
                 if (isOnScale) {
@@ -132,7 +144,6 @@ export default class IDraggableUtil {
             executionBroken = true
             break
         }
-
         if (!executionBroken) {
             for (let i = comments.length - 1; i >= 0; i--) {
                 const comment = comments[i]
@@ -144,7 +155,7 @@ export default class IDraggableUtil {
                 }
             }
         }
-
+        SelectionStore.updateStore({selected: SelectionStore.getSelectionMap()})
         if (nodesOnDrag.length > 0 || IO.node !== undefined)
             canvasAPI.__ctx.canvas.style.cursor = "grabbing"
         canvasAPI.clear()
@@ -193,8 +204,9 @@ export default class IDraggableUtil {
                 comment.isOnDrag = true
             }
         }
-        canvasAPI.__selectionMap.set(comment.id, comment)
-        canvasAPI.lastSelection = comment
+
+        SelectionStore.getSelectionMap().set(comment.id, comment)
+        SelectionStore.updateStore({selected: SelectionStore.getSelectionMap(), lastSelection: comment})
     }
 
     static #checkOffset(ev1: MouseEvent, ev2: { x: number, y: number }): boolean {

@@ -2,7 +2,7 @@
     import Icon from "../../components/icon/Icon.svelte";
     import Serializer from "../libs/Serializer";
     import CanvasRenderEngine from "../CanvasRenderEngine";
-    import PScriptRendererState from "../libs/PScriptRendererState";
+    import CanvasStateManager from "../libs/CanvasStateManager";
 
     export let canvas: CanvasRenderEngine
     let fileInput: HTMLInputElement;
@@ -13,7 +13,7 @@
         reader.onload = e => {
             canvas.stop()
             canvas.clearState()
-            PScriptRendererState.setState(canvas, Serializer.deserialize(canvas, e.target.result.toString()))
+            CanvasStateManager.setState(canvas, Serializer.deserialize(canvas, e.target.result.toString()))
             canvas.start()
         };
     }

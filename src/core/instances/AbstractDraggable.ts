@@ -1,5 +1,6 @@
 import AbstractStateful from "./AbstractStateful";
 import uuid from "uuidv4"
+import MathUtil from "../util/MathUtil";
 
 export default abstract class AbstractDraggable extends AbstractStateful<AbstractDraggableProps> implements IDraggable {
     static HEADER_HEIGHT = 25
@@ -34,11 +35,7 @@ export default abstract class AbstractDraggable extends AbstractStateful<Abstrac
         const coord = this.getTransformedCoordinates()
         const XI = coord.x + this.width - AbstractDraggable.SCALE_BUTTON_SIZE
         const YI = coord.y + this.height - AbstractDraggable.SCALE_BUTTON_SIZE
-
-        const XF = XI + AbstractDraggable.SCALE_BUTTON_SIZE
-        const YF = YI + AbstractDraggable.SCALE_BUTTON_SIZE
-
-        return x >= XI && x < XF && y >= YI && y < YF
+        return MathUtil.isPointInsideRect(x, y, XI, YI, AbstractDraggable.SCALE_BUTTON_SIZE, AbstractDraggable.SCALE_BUTTON_SIZE)
     }
 
     getMinHeight() {
@@ -51,14 +48,12 @@ export default abstract class AbstractDraggable extends AbstractStateful<Abstrac
 
     checkHeaderClick(x: number, y: number): boolean {
         const coord = this.getTransformedCoordinates()
-        return x >= coord.x && x < coord.x + this.width && y >= coord.y && y < coord.y + AbstractDraggable.HEADER_HEIGHT
+        return MathUtil.isPointInsideRect(x, y, coord.x, coord.y, this.width,  AbstractDraggable.HEADER_HEIGHT)
     }
 
     checkBodyClick(x: number, y: number): boolean {
         const coord = this.getTransformedCoordinates()
-        const XI = coord.x - 4, XF = coord.x + 4 + this.width
-        const YI = coord.y + AbstractDraggable.HEADER_HEIGHT, YF = YI + this.height - AbstractDraggable.HEADER_HEIGHT
-        return x >= XI && x < XF && y >= YI && y < YF
+        return MathUtil.isPointInsideRect(x, y, coord.x, coord.y + AbstractDraggable.HEADER_HEIGHT, this.width, this.height - AbstractDraggable.HEADER_HEIGHT)
     }
 
     drawScale() {

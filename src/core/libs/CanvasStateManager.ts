@@ -1,7 +1,7 @@
 import DynamicMap from "./DynamicMap";
 import CanvasRenderEngine from "../CanvasRenderEngine";
 
-export default class PScriptRendererState {
+export default class CanvasStateManager {
     static #state = new DynamicMap<string, RendererState<CanvasRenderEngine>>()
 
     static getState(id: string) {

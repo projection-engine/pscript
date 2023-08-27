@@ -131,7 +131,7 @@ export default class RendererUtil {
         state.needsUpdate = true
     }
 
-    static drawDraggableHeader(ctx: CanvasRenderingContext2D, node: IDraggable) {
+    static drawDraggableHeader(ctx: CanvasRenderingContext2D, node: IDraggable, borderRadius?: number) {
         const state = node.__canvas.getState()
         const name = node.label
         const color = node.colorRGBA
@@ -141,7 +141,7 @@ export default class RendererUtil {
         ctx.fillStyle = `rgb(${color})`
         ctx.strokeStyle = node.__canvas.getState().borderColor
         ctx.lineWidth = .5
-        ctx.roundRect(coord.x, coord.y, node.width, RendererUtil.#HEADER_LABEL_HEIGHT, RendererUtil.#BORDER_RADIUS)
+        ctx.roundRect(coord.x, coord.y, node.width, RendererUtil.#HEADER_LABEL_HEIGHT, borderRadius ?? RendererUtil.#BORDER_RADIUS)
         ctx.stroke()
         ctx.fill()
         ctx.font = state.defaultFont
@@ -164,7 +164,7 @@ export default class RendererUtil {
 
     }
 
-    static drawRoundedRect(ctx: CanvasRenderingContext2D, node: AbstractDraggable, r: number, isSelected: boolean, isFirstSelected: boolean, color: string) {
+    static drawDraggableBody(ctx: CanvasRenderingContext2D, node: AbstractDraggable, r: number, isSelected: boolean, isFirstSelected: boolean, color: string) {
         const coord = node.getTransformedCoordinates()
         const state = node.__canvas.getState()
         const w = node.width, h = node.height, x = coord.x, y = coord.y
@@ -178,9 +178,14 @@ export default class RendererUtil {
         ctx.lineWidth = isSelected ? 2 : 1
         ctx.strokeStyle = outlineColor
 
+        RendererUtil.drawRoundedRect(ctx, x, y, w, h, r)
+    }
+
+    static drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
         ctx.beginPath()
         ctx.roundRect(x, y, w, h, r)
-        ctx.stroke()
         ctx.fill()
+        ctx.closePath()
+        ctx.stroke()
     }
 }

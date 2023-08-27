@@ -4,6 +4,7 @@ import {MaterialDataTypes} from "../pscript.enum";
 import LocalizationEN from "../resources/LocalizationEN";
 import ToastNotificationSystem from "../../components/alert/ToastNotificationSystem";
 import Link from "../instances/Link";
+import SelectionStore from "../libs/SelectionStore";
 
 export default class PScriptUtil {
     /**
@@ -16,7 +17,7 @@ export default class PScriptUtil {
             biggestX: number | undefined,
             biggestY: number | undefined
 
-        canvasAPI.__selectionMap
+        SelectionStore.getSelectionMap()
             .forEach(n => {
                 if (!smallestX || n.x < smallestX)
                     smallestX = n.x

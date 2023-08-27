@@ -1,7 +1,7 @@
 <script lang="ts">
     import PScript from "../../core/PScript.svelte";
     import SideBar from "../../core/components/SideBar.svelte";
-    import PScriptRendererState from "../../core/libs/PScriptRendererState";
+    import CanvasStateManager from "../../core/libs/CanvasStateManager";
     import JavascriptNodes from "./javascript-nodes";
     import uuid from "uuidv4"
     import registerTypes from "./register-types";
@@ -9,7 +9,7 @@
     import ActionBar from "../../core/components/ActionBar.svelte";
 
 
-    const canvas = PScriptRendererState.createState(uuid())
+    const canvas = CanvasStateManager.createState(uuid())
     onMount(registerTypes)
 </script>
 <ActionBar {canvas}/>
