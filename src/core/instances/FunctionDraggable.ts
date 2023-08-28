@@ -38,7 +38,6 @@ export default class FunctionDraggable extends AbstractDraggable implements IFun
     #drawCollapseButton() {
         const ctx = this.__canvas.__ctx
 
-
         const coord = this.getTransformedCoordinates()
         const offset = AbstractDraggable.HEADER_HEIGHT * .1
         const size = AbstractDraggable.HEADER_HEIGHT * .75

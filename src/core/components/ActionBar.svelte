@@ -36,8 +36,7 @@
     }
 </script>
 
-<div>
-
+<div class="wrapper">
     <button data-sveltebuttondefault="-" on:click={download}>
         <Icon>file_download</Icon>
         Export
@@ -53,3 +52,15 @@
             on:change={onFileSelected} bind:this={fileInput}
     >
 </div>
+
+<style>
+    .wrapper{
+        height: 35px;
+        display: flex;
+        align-items: center;
+        padding: 4px;
+        gap: 4px;
+        border-bottom: var(--pj-border-primary) 1px solid;
+    }
+
+</style>
