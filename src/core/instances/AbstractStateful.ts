@@ -2,9 +2,9 @@ import AbstractSerializable from "./AbstractSerializable";
 
 export default abstract class AbstractStateful<T> extends AbstractSerializable<T> implements IStateful {
     __properties: Map<string, any>;
-    colorRGBA: [number, number, number, number]
+    colorRGBA: ColorRGBA
 
-    protected fromValue(colorRGBA: [number, number, number, number] ) {
+    protected fromValue(colorRGBA: ColorRGBA ) {
         this.colorRGBA = colorRGBA
         this.__properties = new Map()
         const properties = this.getInitialProperties()

@@ -4,7 +4,6 @@ import BooleanVal from "./basic-types/BooleanVal";
 import NumberVal from "./basic-types/NumberVal";
 import {Colors} from "./javascript.enum";
 import Do from "./basic-functions/Do";
-import FunctionDraggable from "../../core/instances/FunctionDraggable";
 
 export default [
     {
@@ -27,17 +26,6 @@ export default [
             y,
             label: "New comment",
             colorRGBA: Colors.COMMENT
-        })
-    },
-    {
-        label: "Function",
-        class: "FunctionDraggable",
-        getInstance: (x, y, canvas) => FunctionDraggable.of({
-            canvas,
-            x,
-            y,
-            label: "New function",
-            colorRGBA: Colors.FUNCTION
         })
     },
 

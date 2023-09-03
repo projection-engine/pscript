@@ -4,8 +4,9 @@ import RendererUtil from "./RendererUtil";
 import CommentDraggable from "../instances/CommentDraggable";
 import CanvasRenderEngine from "../CanvasRenderEngine";
 import PScriptUtil from "./PScriptUtil";
-import FunctionDraggable from "../instances/FunctionDraggable";
-import SelectionStore from "../libs/SelectionStore";
+import CanvasStateStore from "../libs/CanvasStateStore";
+import CanvasStateUtil from "./CanvasStateUtil";
+import GlobalStyles from "../resources/GlobalStyles";
 
 export default class IDraggableUtil {
 
@@ -26,10 +27,10 @@ export default class IDraggableUtil {
         const coord = node.getTransformedCoordinates()
 
         const xN = coord.x, yN = coord.y, w = node.width
-        const H = AbstractDraggable.HEADER_HEIGHT - 5
+        const H = GlobalStyles.HEADER_HEIGHT - 5
         const Y = yN + H * (index + 2)
         const xIO = !asOutput ? xN : xN + w
-        const yIO = Y - AbstractNode.IO_RADIUS
+        const yIO = Y - GlobalStyles.IO_RADIUS
 
 
         return {x: xIO, y: yIO, height: H, width: w, rowY: Y}
@@ -86,12 +87,13 @@ export default class IDraggableUtil {
 
         const X = (event.clientX - BBox.x) / state.scale
         const Y = (event.clientY - BBox.y) / state.scale
+        const selectionMap = canvasAPI.getState().selected
 
         if (!event.ctrlKey) {
-            SelectionStore.updateStore({lastSelection: undefined})
-            SelectionStore.getSelectionMap().clear()
+            CanvasStateStore.updateStore({lastSelection: undefined})
+            selectionMap.clear()
         } else {
-            SelectionStore.getSelectionMap().forEach(node => {
+            selectionMap.forEach(node => {
                 nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
             })
         }
@@ -104,19 +106,11 @@ export default class IDraggableUtil {
             const onHeader = node.checkHeaderClick(X, Y)
             if (!onHeader && !onBody)
                 continue
-            const isFunctionNode = node instanceof FunctionDraggable
-            if(isFunctionNode){
-                SelectionStore.updateStore({focusedFunction: node.id})
-            }
-            SelectionStore.getSelectionMap().set(node.id, node)
-            SelectionStore.updateStore({lastSelection: node})
+            selectionMap.set(node.id, node)
+            CanvasStateStore.updateProperty(canvasAPI.getId(), "lastSelection", node)
             if (onHeader) {
-                if (isFunctionNode && node.checkAgainstCollapse(X, Y)) {
-                    node.collapsed = !node.collapsed
-                } else {
-                    nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
-                    node.isOnDrag = true
-                }
+                nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
+                node.isOnDrag = true
             } else if (!event.ctrlKey) {
                 const isOnScale = node.checkAgainstScale(X, Y)
                 if (isOnScale) {
@@ -155,7 +149,8 @@ export default class IDraggableUtil {
                 }
             }
         }
-        SelectionStore.updateStore({selected: SelectionStore.getSelectionMap()})
+
+        CanvasStateStore.triggerDelayedUpdate(canvasAPI.getId())
         if (nodesOnDrag.length > 0 || IO.node !== undefined)
             canvasAPI.__ctx.canvas.style.cursor = "grabbing"
         canvasAPI.clear()
@@ -185,7 +180,7 @@ export default class IDraggableUtil {
         IO.node = found.sourceNode
         IO.output = found.output
 
-        canvasAPI.removeLink(linkIndex)
+        CanvasStateUtil.removeLink(canvasAPI.getId(), linkIndex)
         const state = canvasAPI.getState()
         state.tempLinkCoords.startX = originalPosition.x
         state.tempLinkCoords.startY = originalPosition.y
@@ -205,8 +200,9 @@ export default class IDraggableUtil {
             }
         }
 
-        SelectionStore.getSelectionMap().set(comment.id, comment)
-        SelectionStore.updateStore({selected: SelectionStore.getSelectionMap(), lastSelection: comment})
+        canvasAPI.getState().selected.set(comment.id, comment)
+        CanvasStateStore.silentlyUpdateProperty(canvasAPI.getId(), "lastSelection", comment)
+        CanvasStateStore.triggerDelayedUpdate(canvasAPI.getId())
     }
 
     static #checkOffset(ev1: MouseEvent, ev2: { x: number, y: number }): boolean {

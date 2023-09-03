@@ -1,11 +1,10 @@
 import AbstractNode from "../../../core/instances/AbstractNode";
-import Types, {Colors, NodeTypes} from "../javascript.enum";
+import Types, {Colors} from "../javascript.enum";
 import PropertyType from "../../../core/instances/PropertyType";
 import NodeType from "../../../core/instances/NodeType";
 import Output from "../../../core/instances/Output";
 import Input from "../../../core/instances/Input";
-import ExecutionOutput from "../../../core/instances/ExecutionOutput";
-import ExecutionInput from "../../../core/instances/ExecutionInput";
+import {NodeTypes} from "../../../core/pscript.enum";
 
 export default class BooleanVal extends AbstractNode {
 
@@ -20,7 +19,6 @@ export default class BooleanVal extends AbstractNode {
         instance.from({
             ...props,
             inputs: [
-                ExecutionInput.of("run", "Continue"),
                 Input.of({
                     key: "truthy",
                     label: "Truthy",
@@ -30,11 +28,10 @@ export default class BooleanVal extends AbstractNode {
                 })
             ],
             outputs: [
-                ExecutionOutput.of("run", "Continue"),
                 Output.of({
                     key: "truthy",
                     label: "isTruthy",
-                    type: PropertyType.of(Types.BOOLEAN),
+                    type: PropertyType.of(Types.BOOLEAN, Colors.BOOLEAN),
                     disabled: false,
                     colorRGBA: Colors.BOOLEAN
                 })

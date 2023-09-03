@@ -1,13 +1,13 @@
 <script lang="ts">
     import {onDestroy, onMount} from "svelte"
     import CanvasRenderEngine from "./CanvasRenderEngine"
-    import CanvasStateManager from "./libs/CanvasStateManager";
     import AbstractDraggable from "./instances/AbstractDraggable";
     import ActionBar from "./components/ActionBar.svelte";
     import SideBar from "./components/ResourcesSideBar.svelte";
     import Tabs from "../components/tabs/Tabs.svelte";
     import ResizableBar from "../components/resizable/ResizableBar.svelte";
-    import PropertiesSideBar from "./components/ManagementSideBar.svelte";
+    import CanvasStateStore from "./libs/CanvasStateStore";
+    import CanvasStateUtil from "./util/CanvasStateUtil";
 
     export let scriptCanvas: CanvasRenderEngine
     export let allNodes: {
@@ -27,9 +27,7 @@
     let canvasElement
 
     onMount(() => scriptCanvas.initialize(canvasElement))
-    onDestroy(() => {
-        CanvasStateManager.destroyState(scriptCanvas.getId())
-    })
+    onDestroy(() => CanvasStateStore.destroyState(scriptCanvas.getId()))
 
     function onDrop(e: DragEvent) {
         const nodeId = e.dataTransfer.getData("text")
@@ -40,7 +38,7 @@
         const y = e.clientY - rect.top - state.offsetY;
         const instance = allNodes.find(n => n.class === nodeId)?.getInstance?.(x, y, scriptCanvas)
         if (instance != null) {
-            scriptCanvas.addDraggable(instance)
+            CanvasStateUtil.addDraggable(scriptCanvas.getId(), instance)
         }
     }
 </script>
@@ -56,9 +54,7 @@
         }}
 />
 <div class="content">
-    <PropertiesSideBar
-            scriptCanvas={scriptCanvas}
-    />
+    <slot name="dynamic-nodes"/>
     <ResizableBar type="width"/>
     <div class="wrapper" on:drop={onDrop}>
         <canvas

@@ -1,6 +1,5 @@
 <script lang="ts">
     import LocalizationEN from "../resources/LocalizationEN";
-    import Input from "../../components/input/Input.svelte";
     import Icon from "../../components/icon/Icon.svelte";
 
     export let allNodes: { label: string, class: string }[] = []

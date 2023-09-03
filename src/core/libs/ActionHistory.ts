@@ -48,7 +48,7 @@ export default class ActionHistory {
 
     #apply(action: IAction) {
         const {toAdd, toRemove} = action
-        this.canvas.removeDraggable(toRemove, true)
+        // CanvasStateUtil.removeDraggable(this.canvas.getId(), toRemove)
         if (toAdd)
             for (let i = 0; i < toAdd.length; i++) {
                 const current = toAdd[i]

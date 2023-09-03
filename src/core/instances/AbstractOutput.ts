@@ -6,7 +6,7 @@ export default abstract class AbstractOutput extends AbstractStateful<{
     type: IType;
     disabled: boolean;
     hideLabel?: boolean;
-    colorRGBA?: [number, number, number, number];
+    colorRGBA?: ColorRGBA;
 }> implements IOutput {
     getInitialProperties(): MutableObject | undefined {
         return {};

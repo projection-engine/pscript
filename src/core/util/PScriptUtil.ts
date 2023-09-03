@@ -4,7 +4,7 @@ import {MaterialDataTypes} from "../pscript.enum";
 import LocalizationEN from "../resources/LocalizationEN";
 import ToastNotificationSystem from "../../components/alert/ToastNotificationSystem";
 import Link from "../instances/Link";
-import SelectionStore from "../libs/SelectionStore";
+import CanvasStateUtil from "./CanvasStateUtil";
 
 export default class PScriptUtil {
     /**
@@ -17,7 +17,7 @@ export default class PScriptUtil {
             biggestX: number | undefined,
             biggestY: number | undefined
 
-        SelectionStore.getSelectionMap()
+        canvasAPI.getState().selected
             .forEach(n => {
                 if (!smallestX || n.x < smallestX)
                     smallestX = n.x
@@ -71,7 +71,7 @@ export default class PScriptUtil {
                     const targetIO = node.checkAgainstIO<IInput>(X, Y, true)
                     if (targetIO?.acceptsType?.(sourceIO.type)) {
                         const newLink = Link.of(node, sourceNode, targetIO, sourceIO)
-                        canvasAPI.addLink(newLink)
+                        CanvasStateUtil.addLink(canvasAPI.getId(), newLink)
                     } else if (targetIO) {
                         ToastNotificationSystem.getInstance().error(LocalizationEN.INVALID_TYPE)
                     }

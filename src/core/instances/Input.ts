@@ -7,7 +7,7 @@ export default class Input extends AbstractInput {
         accept: IType[],
         disabled: boolean,
         visibleOnNode: boolean,
-        colorRGBA?: [number, number, number, number]
+        colorRGBA?: ColorRGBA
     }) {
         const instance = new Input()
         instance.from(props)

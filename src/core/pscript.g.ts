@@ -1,5 +1,19 @@
+interface IFunctionNode {
+
+}
+
+type ColorRGBA = [number, number, number, number]
+interface IVariableNode {
+    _variable: IVariable;
+    getVariable: () => IVariable
+}
+
 interface ISerializable<T> {
     from(props: T)
+}
+
+interface VariableProps extends NodeProps {
+    variable: IVariable
 }
 
 type NodeProps = {
@@ -7,7 +21,7 @@ type NodeProps = {
     x: number;
     y: number;
     label: string;
-    colorRGBA: [number, number, number, number];
+    colorRGBA: ColorRGBA;
     outputs?: IOutput[];
     inputs?: IInput[];
 }
@@ -17,7 +31,7 @@ type AbstractDraggableProps = {
     x: number;
     y: number;
     label: string;
-    colorRGBA: [number, number, number, number];
+    colorRGBA: ColorRGBA;
 }
 
 interface IRenderEngine {
@@ -28,11 +42,11 @@ interface IRenderEngine {
     getState(): RendererState<any>;
 }
 
-interface IStateful extends ISerializable<any>{
+interface IStateful extends ISerializable<any> {
     __properties: Map<string, any>;
     setProperty: (key: string, value: any) => void;
     getProperty: <T>(key: string) => T;
-    colorRGBA: [number, number, number, number];
+    colorRGBA: ColorRGBA;
 }
 
 interface IDraggable extends IStateful {
@@ -71,7 +85,7 @@ interface IBend {
     y: number
 }
 
-interface ILink extends ISerializable<any>{
+interface ILink extends ISerializable<any> {
     input: IInput,
     output: IOutput,
     targetNode: INodeDraggable,
@@ -85,7 +99,9 @@ interface IAction {
 }
 
 interface IType {
-    getType: () => string
+    getType(): string
+
+    getColor(): ColorRGBA
 }
 
 
@@ -108,13 +124,25 @@ interface IInput extends IStateful {
     acceptsType(type: IType): boolean;
 }
 
+interface IVariable {
+    _name: string;
+    _type: IType;
 
-interface RendererState<T> {
+    getName(): string
+
+    getType(): IType
+}
+
+/**
+ * Should act like a function scope
+ */
+type RendererState<T> = {
     getId: GenericNonVoidFunction<string>,
     links: ILink[],
     nodes: INodeDraggable[],
     functions: IFunctionDraggable[],
     comments: ICommentDraggable[],
+    variables: IVariable[],
 
     needsUpdate: boolean,
     getInstance: () => T,
@@ -122,17 +150,8 @@ interface RendererState<T> {
     offsetY: number,
     grid: number,
     scale: number,
-    backgroundColor: string,
-    rectColor: string,
-    borderColor: string,
     defaultTextSize: number,
     smallTextSize: number,
-    defaultFont: string,
-    smallFont: string,
-    textColor: string,
-    firstSelectionColor: string,
-    multiSelectionColor: string,
-    ioTextColor: string,
     tempLinkCoords: {
         x: number,
         y: number,
@@ -140,7 +159,10 @@ interface RendererState<T> {
         startY: number,
         color: string
     },
-    drawTempLink: boolean
-    executionIOColor: string
+    drawTempLink: boolean,
+
+    selected: Map<string, IDraggable>,
+    lastSelection: IDraggable,
+    variableNames: { [key: string]: boolean }
 }
 

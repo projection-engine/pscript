@@ -5,6 +5,7 @@ import AbstractDraggable from "../instances/AbstractDraggable";
 import CanvasRenderEngine from "../CanvasRenderEngine";
 import ExecutionInput from "../instances/ExecutionInput";
 import ExecutionOutput from "../instances/ExecutionOutput";
+import GlobalStyles from "../resources/GlobalStyles";
 
 
 export default class RendererUtil {
@@ -35,25 +36,25 @@ export default class RendererUtil {
         let label = attribute.label
 
         if (attribute instanceof ExecutionInput) {
-            ctx.strokeStyle = state.borderColor
-            ctx.fillStyle = state.executionIOColor
+            ctx.strokeStyle = GlobalStyles.borderColor
+            ctx.fillStyle = GlobalStyles.executionIOColor
             ctx.lineWidth = .5
-            X = X + AbstractNode.IO_RADIUS * 2
-            this.#drawTriangleIOExecution(linePosition.y, X + AbstractNode.IO_RADIUS, ctx);
+            X = X + GlobalStyles.IO_RADIUS * 2
+            this.#drawTriangleIOExecution(linePosition.y, X + GlobalStyles.IO_RADIUS, ctx);
         } else {
-            ctx.font = state.smallFont
-            ctx.strokeStyle = state.borderColor
+            ctx.font = GlobalStyles.smallFont
+            ctx.strokeStyle = GlobalStyles.borderColor
 
             ctx.beginPath()
             ctx.fillStyle = IDraggableUtil.getIOColor(attribute, attribute.disabled)
             ctx.lineWidth = .5
-            ctx.arc(X, YA, AbstractNode.IO_RADIUS, 0, Math.PI * 2)
+            ctx.arc(X, YA, GlobalStyles.IO_RADIUS, 0, Math.PI * 2)
             ctx.fill()
             ctx.stroke()
         }
         if (!attribute.hideLabel) {
-            X -= AbstractNode.IO_RADIUS
-            ctx.fillStyle = state.ioTextColor
+            X -= GlobalStyles.IO_RADIUS
+            ctx.fillStyle = GlobalStyles.ioTextColor
             let X_P = X + this.#LABEL_OFFSET
             ctx.fillText(label, X_P, Y)
             ctx.closePath()
@@ -71,40 +72,39 @@ export default class RendererUtil {
         const labelSize = state.smallTextSize * label.length + this.#LABEL_OFFSET
 
         if (attribute instanceof ExecutionOutput) {
-            ctx.strokeStyle = state.borderColor
-            ctx.fillStyle = state.executionIOColor
+            ctx.strokeStyle = GlobalStyles.borderColor
+            ctx.fillStyle = GlobalStyles.executionIOColor
             ctx.lineWidth = .5
-            this.#drawTriangleIOExecution(linePosition.y, linePosition.x - AbstractNode.IO_RADIUS, ctx);
+            this.#drawTriangleIOExecution(linePosition.y, linePosition.x - GlobalStyles.IO_RADIUS, ctx);
         } else {
-            ctx.font = state.smallFont
-            ctx.strokeStyle = state.borderColor
+            ctx.font = GlobalStyles.smallFont
+            ctx.strokeStyle = GlobalStyles.borderColor
 
             ctx.beginPath()
             ctx.fillStyle = IDraggableUtil.getIOColor(attribute, false)
             ctx.lineWidth = .5
-            ctx.arc(X, YA, AbstractNode.IO_RADIUS, 0, Math.PI * 2)
+            ctx.arc(X, YA, GlobalStyles.IO_RADIUS, 0, Math.PI * 2)
             ctx.fill()
             ctx.stroke()
         }
         if (!attribute.hideLabel) {
-            X -= AbstractNode.IO_RADIUS * 2
-            ctx.fillStyle = state.ioTextColor
+            X -= GlobalStyles.IO_RADIUS * 2
+            ctx.fillStyle = GlobalStyles.ioTextColor
             ctx.fillText(label, X - labelSize + this.#LABEL_OFFSET, Y)
             ctx.closePath()
         }
     }
 
     static drawDraggablePosition(ctx: CanvasRenderingContext2D, draggable: IDraggable) {
-        const state = draggable.__canvas.getState()
 
-        ctx.font = state.defaultFont
+        ctx.font = GlobalStyles.defaultFont
         const coord = draggable.getTransformedCoordinates()
         const TEXT = `X ${coord.x} Y ${coord.y} W ${draggable.width} H ${draggable.height}`
         let Y = coord.y - 10
         if (Y < 0)
             Y = coord.y + draggable.height + 10
         ctx.beginPath()
-        ctx.fillStyle = state.textColor
+        ctx.fillStyle = GlobalStyles.textColor
         ctx.fillText(TEXT, coord.x, Y)
 
     }
@@ -114,8 +114,8 @@ export default class RendererUtil {
         const coordS = S.getTransformedCoordinates()
         const coordT = T.getTransformedCoordinates()
         const x1 = coordS.x + S.width, x2 = coordT.x,
-            y1 = coordS.y + AbstractDraggable.HEADER_HEIGHT + AbstractNode.IO_RADIUS * 3 + S.outputs.indexOf(link.output) * 20,
-            y2 = coordT.y + AbstractDraggable.HEADER_HEIGHT + AbstractNode.IO_RADIUS * 3 + T.inputs.indexOf(link.input) * 20
+            y1 = coordS.y + GlobalStyles.HEADER_HEIGHT + GlobalStyles.IO_RADIUS * 3 + S.outputs.indexOf(link.output) * 20,
+            y2 = coordT.y + GlobalStyles.HEADER_HEIGHT + GlobalStyles.IO_RADIUS * 3 + T.inputs.indexOf(link.input) * 20
 
         const isSomeoneDisabled = link.output.disabled || link.input.disabled
         ctx.strokeStyle = IDraggableUtil.getIOColor(link.output, isSomeoneDisabled)
@@ -132,22 +132,21 @@ export default class RendererUtil {
     }
 
     static drawDraggableHeader(ctx: CanvasRenderingContext2D, node: IDraggable, borderRadius?: number) {
-        const state = node.__canvas.getState()
         const name = node.label
         const color = node.colorRGBA
         const coord = node.getTransformedCoordinates()
 
         ctx.beginPath()
         ctx.fillStyle = `rgb(${color})`
-        ctx.strokeStyle = node.__canvas.getState().borderColor
+        ctx.strokeStyle = GlobalStyles.borderColor
         ctx.lineWidth = .5
         ctx.roundRect(coord.x, coord.y, node.width, RendererUtil.#HEADER_LABEL_HEIGHT, borderRadius ?? RendererUtil.#BORDER_RADIUS)
         ctx.stroke()
         ctx.fill()
-        ctx.font = state.defaultFont
+        ctx.font = GlobalStyles.defaultFont
 
-        ctx.fillStyle = state.textColor
-        ctx.fillText(name, coord.x + AbstractNode.IO_RADIUS, coord.y + RendererUtil.#OFFSET_Y_TITLE)
+        ctx.fillStyle = GlobalStyles.textColor
+        ctx.fillText(name, coord.x + GlobalStyles.IO_RADIUS, coord.y + RendererUtil.#OFFSET_Y_TITLE)
         ctx.closePath()
     }
 
@@ -166,13 +165,12 @@ export default class RendererUtil {
 
     static drawDraggableBody(ctx: CanvasRenderingContext2D, node: AbstractDraggable, r: number, isSelected: boolean, isFirstSelected: boolean, color: string) {
         const coord = node.getTransformedCoordinates()
-        const state = node.__canvas.getState()
         const w = node.width, h = node.height, x = coord.x, y = coord.y
         if (w < 2 * r) r = w / 2
         if (h < 2 * r) r = h / 2
-        let outlineColor = state.borderColor
+        let outlineColor = GlobalStyles.borderColor
         if (isSelected) {
-            outlineColor = isFirstSelected ? state.firstSelectionColor : state.multiSelectionColor
+            outlineColor = isFirstSelected ? GlobalStyles.firstSelectionColor : GlobalStyles.multiSelectionColor
         }
         ctx.fillStyle = color
         ctx.lineWidth = isSelected ? 2 : 1

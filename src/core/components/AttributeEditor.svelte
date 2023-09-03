@@ -8,7 +8,7 @@
     import Input from "../../components/input/Input.svelte";
     import Icon from "../../components/icon/Icon.svelte";
 
-    export let node: AbstractNode | CommentDraggable
+    export let node: IDraggable
     export let updateCanvas: Function
 
 

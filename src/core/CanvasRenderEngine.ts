@@ -1,13 +1,9 @@
 import RendererUtil from "./util/RendererUtil"
-import AbstractNode from "./instances/AbstractNode"
 import type AbstractLink from "./instances/AbstractLink"
-import CommentDraggable from "./instances/CommentDraggable"
-import ActionHistory from "./libs/ActionHistory"
 import PScriptUtil from "./util/PScriptUtil";
-import CanvasStateManager from "./libs/CanvasStateManager";
-import AbstractDraggable from "./instances/AbstractDraggable";
 import IDraggableUtil from "./util/IDraggableUtil";
-import SelectionStore from "./libs/SelectionStore";
+import CanvasStateStore from "./libs/CanvasStateStore";
+import GlobalStyles from "./resources/GlobalStyles";
 
 export default class CanvasRenderEngine implements IRenderEngine {
     #id: string
@@ -24,12 +20,12 @@ export default class CanvasRenderEngine implements IRenderEngine {
     }
 
     getState(): RendererState<CanvasRenderEngine> {
-        return this.#state ?? (this.#state = CanvasStateManager.getState(this.getId()))
+        return this.#state ?? (this.#state = CanvasStateStore.getDataById(this.getId()))
     }
 
     clearState() {
         this.#state = undefined
-        SelectionStore.updateStore({
+        CanvasStateStore.updateStore({
             selected: new Map<string, IDraggable>(),
             lastSelection: undefined,
             focusedFunction: undefined
@@ -61,10 +57,10 @@ export default class CanvasRenderEngine implements IRenderEngine {
 
     private findTextDimensions() {
         const state = this.getState()
-        this.__ctx.font = state.defaultFont
+        this.__ctx.font = GlobalStyles.defaultFont
         state.defaultTextSize = this.__ctx.measureText("T").width
 
-        this.__ctx.font = state.smallFont
+        this.__ctx.font = GlobalStyles.smallFont
         state.smallTextSize = this.__ctx.measureText("T").width
     }
 
@@ -82,7 +78,7 @@ export default class CanvasRenderEngine implements IRenderEngine {
     }
 
     #loop() {
-        const STATE = this.#getState()
+        const STATE = this.getState()
         if (!STATE)
             return;
         if (STATE.needsUpdate) {
@@ -105,77 +101,13 @@ export default class CanvasRenderEngine implements IRenderEngine {
         return this.#id
     }
 
-    #getState() {
-        return CanvasStateManager.getState(this.getId())
-    }
-
-    addLink(link: AbstractLink, noUpdate?: boolean) {
-        const foundExisting = this.#state.links.findIndex(l => l.input === link.input)
-        if (foundExisting > -1)
-            this.#state.links[foundExisting] = link
-        else
-            this.#state.links.push(link)
-        if (!noUpdate)
-            this.clear()
-    }
-
-    removeLink(index: number) {
-        this.#state.links.splice(index, 1)
-        this.clear()
-    }
-
-    addDraggable(node: IDraggable) {
-        // if (!noSerialization) {
-        //     this.history.save([node], true)
-        //     this.history.save([node])
-        // }
-        const state = this.getState()
-        if (node instanceof CommentDraggable) {
-            state.comments.push(node)
-        } else {
-            state.nodes.push(<AbstractNode>node)
-        }
-        this.clear()
-    }
-
-    removeDraggable(toRemove: AbstractDraggable[]) {
-        // if (!noSerialization) {
-        //     const mapped = STATE.nodes.filter(e => toRemove.includes(e.id))
-        //     this.history.save(mapped)
-        //     this.history.save(mapped, true)
-        // }
-        const focusedFunction = SelectionStore.getData().focusedFunction
-        for (let i = 0; i < toRemove.length; i++) {
-            const draggable = toRemove[i];
-            SelectionStore.getSelectionMap().delete(draggable.id)
-            if(focusedFunction === draggable.id){
-                SelectionStore.updateStore({focusedFunction: undefined})
-            }
-            if (draggable instanceof AbstractNode) {
-                const index = this.#state.nodes.indexOf(draggable)
-                if (index > -1) {
-                    this.#state.nodes.splice(index, 1)
-                    const toRemove = this.#state.links.filter(l => l.sourceNode === draggable || l.targetNode === draggable)
-                    toRemove.forEach(l => {
-                        this.removeLink(this.#state.links.indexOf(l))
-                    })
-                }
-            } else {
-                const index = this.#state.comments.indexOf(draggable)
-                this.#state.comments.splice(index, 1)
-            }
-        }
-        this.clear()
-    }
-
-
     clear() {
-        this.#getState().needsUpdate = true
+        this.getState().needsUpdate = true
     }
 
     #draw() {
         const ctx = this.__ctx
-        const STATE = this.#getState()
+        const STATE = this.getState()
         const links = STATE.links
         const nodes = STATE.nodes
         const comments = STATE.comments

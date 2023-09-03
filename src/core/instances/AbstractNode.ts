@@ -5,17 +5,14 @@ import NodeType from "./NodeType";
 import ExecutionOutput from "./ExecutionOutput";
 import ExecutionInput from "./ExecutionInput";
 import MathUtil from "../util/MathUtil";
-import SelectionStore from "../libs/SelectionStore";
+import GlobalStyles from "../resources/GlobalStyles";
 
 export default abstract class AbstractNode extends AbstractDraggable implements INodeDraggable {
-    static IO_RADIUS = 4
-
-
     /**
      * IO will query this map
      */
     __properties = new Map<string, any>()
-    #minHeight = AbstractDraggable.HEADER_HEIGHT
+    #minHeight = GlobalStyles.HEADER_HEIGHT
     outputs: IOutput[] = []
     inputs: IInput[] = []
     abstract nodeType: NodeType
@@ -30,7 +27,7 @@ export default abstract class AbstractNode extends AbstractDraggable implements 
             this.outputs.length,
             this.inputs.length
         ) + .5
-        this.#minHeight = this.height = AbstractDraggable.HEADER_HEIGHT + q * (AbstractDraggable.HEADER_HEIGHT - 5)
+        this.#minHeight = this.height = GlobalStyles.HEADER_HEIGHT + q * (GlobalStyles.HEADER_HEIGHT - 5)
     }
 
     getProperty<T>(key): T {
@@ -47,7 +44,7 @@ export default abstract class AbstractNode extends AbstractDraggable implements 
 
 
     checkAgainstIO<T>(x: number, y: number, asInput?: boolean): T {
-        const R2 = AbstractNode.IO_RADIUS ** 2
+        const R2 = GlobalStyles.IO_RADIUS ** 2
         const data = asInput ? this.inputs : this.outputs
 
 
@@ -59,11 +56,11 @@ export default abstract class AbstractNode extends AbstractDraggable implements 
             let isValid = false
             const linePosition = IDraggableUtil.getIOPosition(i, this, !asInput)
             if (io instanceof ExecutionInput) {
-                const startX = linePosition.x + AbstractNode.IO_RADIUS * 3
+                const startX = linePosition.x + GlobalStyles.IO_RADIUS * 3
                 const positions = AbstractNode.#getTrianglePoints(startX, linePosition.y)
                 isValid = MathUtil.isPointInsideTriangle(x, y, positions)
             } else if (io instanceof ExecutionOutput) {
-                const positions = AbstractNode.#getTrianglePoints(linePosition.x - AbstractNode.IO_RADIUS, linePosition.y)
+                const positions = AbstractNode.#getTrianglePoints(linePosition.x - GlobalStyles.IO_RADIUS, linePosition.y)
                 isValid = MathUtil.isPointInsideTriangle(x, y, positions)
             } else {
                 isValid = MathUtil.isPointInsideCircle(x, y, linePosition.x, linePosition.y, R2)
@@ -80,7 +77,8 @@ export default abstract class AbstractNode extends AbstractDraggable implements 
 
     drawToCanvas() {
         const ctx = this.__canvas.__ctx
-        RendererUtil.drawDraggableBody(ctx, this, 3, SelectionStore.getSelectionMap().get(this.id) !== undefined, SelectionStore.getLastSelection() === this, this.__canvas.getState().rectColor)
+        const state = this.__canvas.getState()
+        RendererUtil.drawDraggableBody(ctx, this, 3, state.selected.get(this.id) !== undefined, state.lastSelection === this, GlobalStyles.rectColor)
         RendererUtil.drawDraggableHeader(ctx, this)
 
         for (let j = 0; j < this.outputs.length; j++) {

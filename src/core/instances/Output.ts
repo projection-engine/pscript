@@ -6,7 +6,7 @@ export default class Output extends AbstractOutput {
         label: string,
         type: IType,
         disabled: boolean
-        colorRGBA?: [number, number, number, number]
+        colorRGBA?: ColorRGBA
     }){
         const instance = new Output()
         instance.from(props)
