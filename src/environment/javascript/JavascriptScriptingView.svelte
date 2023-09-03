@@ -6,6 +6,7 @@
     import {onMount} from "svelte";
     import DynamicNodes from "../../core/components/DynamicNodes.svelte";
     import CanvasStateStore from "../../core/libs/CanvasStateStore";
+    import allTypes from "./all-types";
 
     const canvas = CanvasStateStore.createState(uuid())
     onMount(registerTypes)
@@ -15,6 +16,7 @@
         scriptCanvas={canvas}
 >
     <DynamicNodes
+            types={Object.values(allTypes)}
             slot="dynamic-nodes"
             scriptCanvas={canvas}
     />

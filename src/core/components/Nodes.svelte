@@ -29,7 +29,8 @@
         <div
                 class="node"
                 draggable="true"
-                on:dragstart={e => e.dataTransfer.setData("text", d.class)}
+                on:dragstart={e => e.dataTransfer.setData("text", JSON.stringify({type: "node", content: d.class}))}
+
         >
             <Icon>drag_indicator</Icon>
             {d.label}

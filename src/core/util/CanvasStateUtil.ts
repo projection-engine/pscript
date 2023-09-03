@@ -27,6 +27,14 @@ export default class CanvasStateUtil {
     }
 
 
+    static removeLinks(id: string, links: ILink[]) {
+        const state = CanvasStateStore.getDataById(id)
+        state.links = state.links.filter(l => !links.includes(l))
+        state.needsUpdate = true
+        CanvasStateStore.triggerDelayedUpdate(id)
+    }
+
+
     static addDraggable(id: string, node: IDraggable) {
         const state = CanvasStateStore.getDataById(id)
         if (node instanceof CommentDraggable) {
@@ -41,9 +49,11 @@ export default class CanvasStateUtil {
     static removeDraggable(id: string, toRemove: INodeDraggable[]) {
         const state = CanvasStateStore.getDataById(id)
         const focusedFunction = CanvasStateStore.getData().focusedFunction
+        const toRemoveMap = {}
         for (let i = 0; i < toRemove.length; i++) {
             const draggable = toRemove[i];
             state.selected.delete(draggable.id)
+            toRemoveMap[draggable.id] = draggable
             if (focusedFunction === draggable.id) {
                 CanvasStateStore.updateProperty(id, "focusedFunction", undefined)
             }
@@ -51,27 +61,29 @@ export default class CanvasStateUtil {
                 const index = state.nodes.indexOf(draggable)
                 if (index > -1) {
                     state.nodes.splice(index, 1)
-                    const toRemove = state.links.filter(l => l.sourceNode === draggable || l.targetNode === draggable)
-                    toRemove.forEach(l => {
-                        CanvasStateUtil.removeLink(id, state.links.indexOf(l))
-                    })
                 }
             } else {
                 const index = state.comments.indexOf(draggable)
                 state.comments.splice(index, 1)
             }
         }
+
+        const linksToRemove = state.links.flatMap((l, index) => {
+            return (toRemoveMap[l.sourceNode.id] != null || toRemoveMap[l.targetNode.id] != null) ? [l] : []
+        })
+        CanvasStateUtil.removeLinks(id, linksToRemove)
+
         state.needsUpdate = true
         CanvasStateStore.triggerDelayedUpdate(id)
     }
 
     static addVariable(id: string, type: IType, variableName: string): boolean {
         const state = CanvasStateStore.getDataById(id)
-        const correctName = variableName.toLowerCase()
-        if (state.variableNames[correctName])
+        console.trace(state.variableNames, variableName)
+        if (state.variableNames[variableName])
             return false
-        state.variableNames[correctName] = true
-        state.variables.push(new Variable(correctName, type))
+        state.variableNames[variableName] = true
+        state.variables.push(new Variable(variableName, type))
         CanvasStateStore.triggerDelayedUpdate(id)
         return true
     }
@@ -94,8 +106,7 @@ export default class CanvasStateUtil {
 
     static addVariableGetter(id: string, x: number, y: number, variableName: string) {
         const state = CanvasStateStore.getDataById(id)
-        const name = variableName.toLowerCase()
-        const variable = state.variables.find(v => v.getName() === name)
+        const variable = state.variables.find(v => v.getName() === variableName)
         if (variable != null) {
             const newNode = VariableGetterNode.of({
                 variable,
@@ -103,7 +114,7 @@ export default class CanvasStateUtil {
                 x,
                 y,
                 label: variableName + " (GETTER)",
-                colorRGBA: [0, 255, 0, 1]
+                colorRGBA: variable.getType().getColor()
             })
             state.nodes.push(newNode)
             state.needsUpdate = true
@@ -122,7 +133,7 @@ export default class CanvasStateUtil {
                 x,
                 y,
                 label: variableName + " (SETTER)",
-                colorRGBA: [255, 0, 0, 1]
+                colorRGBA: variable.getType().getColor()
             })
             state.nodes.push(newNode)
             state.needsUpdate = true
@@ -130,11 +141,45 @@ export default class CanvasStateUtil {
         }
     }
 
-    static renameVariable(){
-        // TODO
+    static renameVariable(id: string, variable: IVariable, value: string) {
+        const state = CanvasStateStore.getDataById(id)
+        delete state.variableNames[variable._name]
+        variable._name = value
+        state.variableNames[value] = true
+        state.nodes.forEach(n => {
+            if (n instanceof VariableGetterNode && n.getVariable() === variable) {
+                n.label = value + " (GETTER)"
+            } else if (n instanceof VariableSetterNode && n.getVariable() === variable) {
+                n.label = value + " (SETTER)"
+            }
+        })
+        state.needsUpdate = true
+        CanvasStateStore.triggerDelayedUpdate(id)
     }
 
-    static changeVariableType(){
-        // TODO
+    static changeVariableType(id: string, variable: IVariable, value: IType) {
+        const state = CanvasStateStore.getDataById(id)
+        variable._type = value
+        let nodesToRecreate: IVariableNode[] = <IVariableNode[]>state.nodes.filter(n => {
+            return (n instanceof VariableGetterNode || n instanceof VariableSetterNode) && n.getVariable() === variable
+        })
+        CanvasStateUtil.removeDraggable(id, nodesToRecreate)
+        nodesToRecreate = nodesToRecreate.map(n => {
+            const variableProps = {
+                variable: n._variable,
+                canvas: state.getInstance(),
+                x: n.x,
+                y: n.y,
+                label: n.label,
+                colorRGBA: variable.getType().getColor()
+            }
+            if (n instanceof VariableGetterNode)
+                return VariableGetterNode.of(variableProps)
+            else if (n instanceof VariableSetterNode)
+                return VariableSetterNode.of(variableProps)
+        })
+        state.nodes.push(...nodesToRecreate)
+        state.needsUpdate = true
+        CanvasStateStore.triggerDelayedUpdate(id)
     }
 }

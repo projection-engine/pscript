@@ -6,27 +6,21 @@
     import CanvasStateStore from "../libs/CanvasStateStore";
     import {onDestroy, onMount} from "svelte";
     import AbstractFunctionNode from "../instances/AbstractFunctionNode";
-    import VariableGetterNode from "../instances/VariableGetterNode";
+    import PropertyType from "../instances/PropertyType";
 
     const COMPONENT_ID = uuid()
     export let scriptCanvas: CanvasRenderEngine
-    let variables: IVariableNode[] = []
+    export let types: PropertyType[]
+
     let functions: IFunctionNode[] = []
+    let variables: IVariable[] = []
 
     onMount(() => {
         CanvasStateStore.getInstance().addListener(COMPONENT_ID, data => {
+            console.trace("UPDATING")
             const state = data[scriptCanvas.getId()] as RendererState<CanvasRenderEngine>
-            const iFunctions: IFunctionNode[] = []
-            const iVariables: IVariableNode[] = []
-            state.nodes.forEach(node => {
-                if (node instanceof AbstractFunctionNode) {
-                    iFunctions.push(node)
-                } else if (node instanceof VariableGetterNode) {
-                    iVariables.push(node)
-                }
-            })
-            variables = iVariables
-            functions = iFunctions
+            variables = state.variables
+            functions = state.nodes.filter(n => n instanceof AbstractFunctionNode)
         }, [scriptCanvas.getId()])
     })
     onDestroy(() => CanvasStateStore.getInstance().removeListener(COMPONENT_ID))
@@ -36,12 +30,11 @@
     <div class="items-sidebar">
         <div class="item-sidebar">
             <Variables
+                    {types}
                     scriptCanvas={scriptCanvas}
-                    nodes={variables}
+                    variables={variables}
             />
         </div>
-    </div>
-    <div class="items-sidebar">
         <div class="item-sidebar">
             <Functions scriptCanvas={scriptCanvas} nodes={functions}/>
         </div>

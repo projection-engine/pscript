@@ -1,4 +1,3 @@
-import AbstractNode from "../instances/AbstractNode"
 import type AbstractLink from "../instances/AbstractLink"
 import IDraggableUtil from "./IDraggableUtil"
 import AbstractDraggable from "../instances/AbstractDraggable";

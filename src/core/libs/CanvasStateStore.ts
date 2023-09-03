@@ -28,6 +28,7 @@ export default class CanvasStateStore extends AbstractStore {
                 links: [],
                 nodes: [],
                 functions: [],
+                variables: [],
                 comments: [],
                 needsUpdate: false,
                 getInstance: () => instance,
@@ -51,6 +52,7 @@ export default class CanvasStateStore extends AbstractStore {
 
     static triggerDelayedUpdate(instanceId: string) {
         const state = this.getDataById(instanceId)
+        console.trace(state, instanceId)
         if (state != null) {
             this.updateStore({[instanceId]: state})
         }

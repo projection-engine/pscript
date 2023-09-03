@@ -1,10 +1,10 @@
 import AbstractNode from "../../../core/instances/AbstractNode";
 import Types, {Colors,} from "../javascript.enum";
-import PropertyType from "../../../core/instances/PropertyType";
 import NodeType from "../../../core/instances/NodeType";
 import Output from "../../../core/instances/Output";
 import Input from "../../../core/instances/Input";
 import {NodeTypes} from "../../../core/pscript.enum";
+import AllTypes from "../all-types";
 
 export default class NumberVal extends AbstractNode {
     nodeType = NodeType.of(NodeTypes.VAR);
@@ -30,7 +30,7 @@ export default class NumberVal extends AbstractNode {
                 Output.of({
                     key: "value",
                     label: "Value",
-                    type: PropertyType.of(Types.NUMBER, Colors.NUMBER),
+                    type: AllTypes[Types.NUMBER],
                     disabled: false,
                     colorRGBA: Colors.NUMBER
                 })

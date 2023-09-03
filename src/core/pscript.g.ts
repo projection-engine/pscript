@@ -3,7 +3,8 @@ interface IFunctionNode {
 }
 
 type ColorRGBA = [number, number, number, number]
-interface IVariableNode {
+
+interface IVariableNode extends INodeDraggable {
     _variable: IVariable;
     getVariable: () => IVariable
 }

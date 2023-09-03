@@ -1,7 +1,5 @@
 <script lang="ts">
     import Attribute from "./Attribute.svelte";
-
-    import type AbstractNode from "../instances/AbstractNode";
     import CommentDraggable from "../instances/CommentDraggable";
     import LocalizationEN from "../resources/LocalizationEN";
     import ColorPicker from "../../components/color-picker/ColorPicker.svelte";

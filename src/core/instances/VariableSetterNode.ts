@@ -2,6 +2,9 @@ import AbstractNode from "./AbstractNode";
 import NodeType from "./NodeType";
 import {NodeTypes} from "../pscript.enum";
 import Input from "./Input";
+import Output from "./Output";
+import ExecutionInput from "./ExecutionInput";
+import ExecutionOutput from "./ExecutionOutput";
 
 export default class VariableSetterNode extends AbstractNode implements IVariableNode {
     _variable: IVariable
@@ -28,16 +31,26 @@ export default class VariableSetterNode extends AbstractNode implements IVariabl
         instance.from({
             ...props,
             inputs: [
+                ExecutionInput.of("run", "Continue"),
                 Input.of({
                     key: "value",
                     label: "Value",
                     accept: [props.variable.getType()],
                     colorRGBA: props.variable.getType().getColor(),
                     disabled: false,
-                    visibleOnNode: false
+                    visibleOnNode: true
                 })
             ],
-            outputs: []
+            outputs: [
+                ExecutionOutput.of("run", "Continue"),
+                Output.of({
+                    key: "value",
+                    label: "Value",
+                    type: props.variable.getType(),
+                    disabled: false,
+                    colorRGBA: props.variable.getType().getColor()
+                })
+            ]
         });
         return instance
     }

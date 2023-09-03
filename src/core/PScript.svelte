@@ -30,15 +30,33 @@
     onDestroy(() => CanvasStateStore.destroyState(scriptCanvas.getId()))
 
     function onDrop(e: DragEvent) {
-        const nodeId = e.dataTransfer.getData("text")
-        const target = e.currentTarget as HTMLElement;
-        const rect = target.getBoundingClientRect();
-        const state = scriptCanvas.getState()
-        const x = e.clientX - rect.left - state.offsetX;
-        const y = e.clientY - rect.top - state.offsetY;
-        const instance = allNodes.find(n => n.class === nodeId)?.getInstance?.(x, y, scriptCanvas)
-        if (instance != null) {
-            CanvasStateUtil.addDraggable(scriptCanvas.getId(), instance)
+        const data = e.dataTransfer.getData("text")
+        try {
+            const target = e.currentTarget as HTMLElement;
+            const rect = target.getBoundingClientRect();
+            const state = scriptCanvas.getState()
+            const x = e.clientX - rect.left - state.offsetX;
+            const y = e.clientY - rect.top - state.offsetY;
+
+            const payload = JSON.parse(data)
+            switch (payload.type) {
+                case "node": {
+                    const instance = allNodes.find(n => n.class === payload.content)?.getInstance?.(x, y, scriptCanvas)
+                    if (instance != null) {
+                        CanvasStateUtil.addDraggable(scriptCanvas.getId(), instance)
+                    }
+                    break
+                }
+                case "var-getter":
+                    CanvasStateUtil.addVariableGetter(scriptCanvas.getId(), x, y, payload.content)
+                    break
+                case "var-setter":
+                    CanvasStateUtil.addVariableSetter(scriptCanvas.getId(), x, y, payload.content)
+                    break
+            }
+
+        } catch (ex) {
+            console.error(ex)
         }
     }
 </script>
