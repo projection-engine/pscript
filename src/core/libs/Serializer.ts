@@ -1,5 +1,4 @@
-import AbstractStateful from "../instances/AbstractStateful";
-import Comment from "../instances/Comment"
+import CommentDraggable from "../instances/CommentDraggable"
 import PropertyType from "../instances/PropertyType";
 import NodeType from "../instances/NodeType";
 import Output from "../instances/Output";
@@ -7,15 +6,13 @@ import Input from "../instances/Input";
 import ExecutionLink from "../instances/ExecutionLink";
 import ExecutionOutput from "../instances/ExecutionOutput";
 import ExecutionInput from "../instances/ExecutionInput";
-import Bend from "../instances/Bend";
 import AbstractSerializable from "../instances/AbstractSerializable";
 import CanvasRenderEngine from "../CanvasRenderEngine";
-import AbstractNode from "../instances/AbstractNode";
 import AbstractDraggable from "../instances/AbstractDraggable";
 
 export default class Serializer {
     static #types: typeof AbstractSerializable<any>[] = [
-        Comment,
+        CommentDraggable,
         ExecutionInput,
         ExecutionOutput,
         ExecutionLink,

@@ -1,4 +1,4 @@
-import Comment from "../../core/instances/Comment";
+import CommentDraggable from "../../core/instances/CommentDraggable";
 import Add from "./basic-functions/Add";
 import BooleanVal from "./basic-types/BooleanVal";
 import NumberVal from "./basic-types/NumberVal";
@@ -20,7 +20,7 @@ export default [
     {
         label: "Comment",
         class: "CommentDraggable",
-        getInstance: (x, y, canvas) => Comment.of({
+        getInstance: (x, y, canvas) => CommentDraggable.of({
             canvas,
             x,
             y,

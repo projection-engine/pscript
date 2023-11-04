@@ -2,7 +2,7 @@
     import Icon from "../../components/icon/Icon.svelte";
     import Serializer from "../libs/Serializer";
     import CanvasRenderEngine from "../CanvasRenderEngine";
-    import PScriptRendererState from "../libs/PScriptRendererState";
+    import CanvasStateStore from "../libs/CanvasStateStore";
 
     export let canvas: CanvasRenderEngine
     let fileInput: HTMLInputElement;
@@ -13,7 +13,7 @@
         reader.onload = e => {
             canvas.stop()
             canvas.clearState()
-            PScriptRendererState.setState(canvas, Serializer.deserialize(canvas, e.target.result.toString()))
+            CanvasStateStore.updateStore({[canvas.getId()]: Serializer.deserialize(canvas, e.target.result.toString())})
             canvas.start()
         };
     }
@@ -36,8 +36,7 @@
     }
 </script>
 
-<div>
-
+<div class="wrapper">
     <button data-sveltebuttondefault="-" on:click={download}>
         <Icon>file_download</Icon>
         Export
@@ -53,3 +52,15 @@
             on:change={onFileSelected} bind:this={fileInput}
     >
 </div>
+
+<style>
+    .wrapper{
+        height: 35px;
+        display: flex;
+        align-items: center;
+        padding: 4px;
+        gap: 4px;
+        border-bottom: var(--pj-border-primary) 1px solid;
+    }
+
+</style>

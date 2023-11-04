@@ -1,19 +1,19 @@
 <script lang="ts">
     import Attribute from "./Attribute.svelte";
-
-    import type AbstractNode from "../instances/AbstractNode";
-    import Comment from "../instances/Comment";
+    import CommentDraggable from "../instances/CommentDraggable";
     import LocalizationEN from "../resources/LocalizationEN";
     import ColorPicker from "../../components/color-picker/ColorPicker.svelte";
+    import Input from "../../components/input/Input.svelte";
+    import Icon from "../../components/icon/Icon.svelte";
 
-    export let node: AbstractNode | Comment
+    export let node: IDraggable
     export let updateCanvas: Function
 
 
     function handleNodeChange(value: any, attr: MutableObject) {
         node[attr.key] = value
-        const input = (node as AbstractNode).inputs.find(i => i.key === attr.key)
-        input.onChange?.(value)
+        // const input = (node as AbstractNode).inputs.find(i => i.key === attr.key)
+        // input.onChange?.(value)
         updateCanvas()
     }
 </script>
@@ -34,7 +34,7 @@
                         placeholder={LocalizationEN.NAME}
                 />
             </fieldset>
-            {#if node instanceof Comment}
+            {#if node instanceof CommentDraggable}
                 <fieldset>
                     <legend>{LocalizationEN.COLOR}</legend>
                     <ColorPicker
@@ -64,11 +64,16 @@
 
                 {/each}
             {/if}
-
         </div>
     </div>
-
+    {:else}
+    <div data-svelteempty="-">
+        <Icon styles="font-size: 50px">category</Icon>
+        No node selected
+    </div>
 {/if}
+
+
 <style>
     .content-wrapper {
         background: var(--pj-background-tertiary);

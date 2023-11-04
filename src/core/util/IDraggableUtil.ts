@@ -1,9 +1,12 @@
 import AbstractDraggable from "../instances/AbstractDraggable"
 import AbstractNode from "../instances/AbstractNode"
 import RendererUtil from "./RendererUtil";
-import Comment from "../instances/Comment";
+import CommentDraggable from "../instances/CommentDraggable";
 import CanvasRenderEngine from "../CanvasRenderEngine";
 import PScriptUtil from "./PScriptUtil";
+import CanvasStateStore from "../libs/CanvasStateStore";
+import CanvasStateUtil from "./CanvasStateUtil";
+import GlobalStyles from "../resources/GlobalStyles";
 
 export default class IDraggableUtil {
 
@@ -24,10 +27,10 @@ export default class IDraggableUtil {
         const coord = node.getTransformedCoordinates()
 
         const xN = coord.x, yN = coord.y, w = node.width
-        const H = AbstractDraggable.HEADER_HEIGHT - 5
+        const H = GlobalStyles.HEADER_HEIGHT - 5
         const Y = yN + H * (index + 2)
         const xIO = !asOutput ? xN : xN + w
-        const yIO = Y - AbstractNode.IO_RADIUS
+        const yIO = Y - GlobalStyles.IO_RADIUS
 
 
         return {x: xIO, y: yIO, height: H, width: w, rowY: Y}
@@ -79,19 +82,22 @@ export default class IDraggableUtil {
     }, nodesOnDrag, canvasAPI: CanvasRenderEngine, parentBBox, parentElement: HTMLElement, event: MouseEvent) {
         const state = canvasAPI.getState()
         const nodes = <AbstractNode[]>state.nodes
-        const comments = <Comment[]>state.comments
+        const comments = <CommentDraggable[]>state.comments
         const links = state.links
 
         const X = (event.clientX - BBox.x) / state.scale
         const Y = (event.clientY - BBox.y) / state.scale
+        const selectionMap = canvasAPI.getState().selected
 
         if (!event.ctrlKey) {
-            canvasAPI.lastSelection = undefined
-            canvasAPI.__selectionMap.clear()
-        } else
-            canvasAPI.__selectionMap.forEach(node => {
+            CanvasStateStore.updateStore({lastSelection: undefined})
+            selectionMap.clear()
+        } else {
+            selectionMap.forEach(node => {
                 nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
             })
+        }
+
         let executionBroken = false
 
         for (let i = nodes.length - 1; i >= 0; i--) {
@@ -100,8 +106,8 @@ export default class IDraggableUtil {
             const onHeader = node.checkHeaderClick(X, Y)
             if (!onHeader && !onBody)
                 continue
-            canvasAPI.__selectionMap.set(node.id, node)
-            canvasAPI.lastSelection = node
+            selectionMap.set(node.id, node)
+            CanvasStateStore.updateProperty(canvasAPI.getId(), "lastSelection", node)
             if (onHeader) {
                 nodesOnDrag.push(IDraggableUtil.drag(event, node, parentBBox, true))
                 node.isOnDrag = true
@@ -132,7 +138,6 @@ export default class IDraggableUtil {
             executionBroken = true
             break
         }
-
         if (!executionBroken) {
             for (let i = comments.length - 1; i >= 0; i--) {
                 const comment = comments[i]
@@ -145,6 +150,7 @@ export default class IDraggableUtil {
             }
         }
 
+        CanvasStateStore.triggerDelayedUpdate(canvasAPI.getId())
         if (nodesOnDrag.length > 0 || IO.node !== undefined)
             canvasAPI.__ctx.canvas.style.cursor = "grabbing"
         canvasAPI.clear()
@@ -174,7 +180,7 @@ export default class IDraggableUtil {
         IO.node = found.sourceNode
         IO.output = found.output
 
-        canvasAPI.removeLink(linkIndex)
+        CanvasStateUtil.removeLink(canvasAPI.getId(), linkIndex)
         const state = canvasAPI.getState()
         state.tempLinkCoords.startX = originalPosition.x
         state.tempLinkCoords.startY = originalPosition.y
@@ -182,7 +188,7 @@ export default class IDraggableUtil {
         RendererUtil.drawTempLink(event, parentElement, parentBBox, canvasAPI)
     }
 
-    private static processCommentClick(onHeader: boolean, nodesOnDrag, event: MouseEvent, comment: Comment, parentBBox, X: number, Y: number, canvasAPI: CanvasRenderEngine) {
+    private static processCommentClick(onHeader: boolean, nodesOnDrag, event: MouseEvent, comment: CommentDraggable, parentBBox, X: number, Y: number, canvasAPI: CanvasRenderEngine) {
         if (onHeader) {
             nodesOnDrag.push(IDraggableUtil.drag(event, comment, parentBBox, true))
             comment.isOnDrag = true
@@ -193,8 +199,10 @@ export default class IDraggableUtil {
                 comment.isOnDrag = true
             }
         }
-        canvasAPI.__selectionMap.set(comment.id, comment)
-        canvasAPI.lastSelection = comment
+
+        canvasAPI.getState().selected.set(comment.id, comment)
+        CanvasStateStore.silentlyUpdateProperty(canvasAPI.getId(), "lastSelection", comment)
+        CanvasStateStore.triggerDelayedUpdate(canvasAPI.getId())
     }
 
     static #checkOffset(ev1: MouseEvent, ev2: { x: number, y: number }): boolean {

@@ -1,20 +1,13 @@
 import AbstractStateful from "./AbstractStateful";
 import uuid from "uuidv4"
+import MathUtil from "../util/MathUtil";
+import GlobalStyles from "../resources/GlobalStyles";
 
-export default abstract class AbstractDraggable extends AbstractStateful<{
-    canvas: IRenderEngine,
-    x: number,
-    y: number,
-    label: string,
-    colorRGBA: [number, number, number, number]
-}> implements IDraggable {
-    static HEADER_HEIGHT = 25
-    static SCALE_BUTTON_SIZE = 10
-
+export default abstract class AbstractDraggable extends AbstractStateful<AbstractDraggableProps> implements IDraggable {
     id = uuid()
     isOnDrag = false
     width = 200
-    height = AbstractDraggable.HEADER_HEIGHT
+    height = GlobalStyles.HEADER_HEIGHT
     x: number
     y: number
     label: string
@@ -38,17 +31,13 @@ export default abstract class AbstractDraggable extends AbstractStateful<{
         if (!this.resizable)
             return false
         const coord = this.getTransformedCoordinates()
-        const XI = coord.x + this.width - AbstractDraggable.SCALE_BUTTON_SIZE
-        const YI = coord.y + this.height - AbstractDraggable.SCALE_BUTTON_SIZE
-
-        const XF = XI + AbstractDraggable.SCALE_BUTTON_SIZE
-        const YF = YI + AbstractDraggable.SCALE_BUTTON_SIZE
-
-        return x >= XI && x < XF && y >= YI && y < YF
+        const XI = coord.x + this.width - GlobalStyles.SCALE_BUTTON_SIZE
+        const YI = coord.y + this.height - GlobalStyles.SCALE_BUTTON_SIZE
+        return MathUtil.isPointInsideRect(x, y, XI, YI, GlobalStyles.SCALE_BUTTON_SIZE, GlobalStyles.SCALE_BUTTON_SIZE)
     }
 
     getMinHeight() {
-        return AbstractDraggable.HEADER_HEIGHT
+        return GlobalStyles.HEADER_HEIGHT
     }
 
     getMinWidth() {
@@ -57,28 +46,25 @@ export default abstract class AbstractDraggable extends AbstractStateful<{
 
     checkHeaderClick(x: number, y: number): boolean {
         const coord = this.getTransformedCoordinates()
-        return x >= coord.x && x < coord.x + this.width && y >= coord.y && y < coord.y + AbstractDraggable.HEADER_HEIGHT
+        return MathUtil.isPointInsideRect(x, y, coord.x, coord.y, this.width,  GlobalStyles.HEADER_HEIGHT)
     }
 
     checkBodyClick(x: number, y: number): boolean {
         const coord = this.getTransformedCoordinates()
-        const XI = coord.x - 4, XF = coord.x + 4 + this.width
-        const YI = coord.y + AbstractDraggable.HEADER_HEIGHT, YF = YI + this.height - AbstractDraggable.HEADER_HEIGHT
-        return x >= XI && x < XF && y >= YI && y < YF
+        return MathUtil.isPointInsideRect(x, y, coord.x, coord.y + GlobalStyles.HEADER_HEIGHT, this.width, this.height - GlobalStyles.HEADER_HEIGHT)
     }
 
     drawScale() {
         if (!this.resizable)
             return
         const coord = this.getTransformedCoordinates()
-        const state = this.__canvas.getState()
         const ctx = this.__canvas.__ctx
 
-        const XI = coord.x + this.width - AbstractDraggable.SCALE_BUTTON_SIZE
-        const YI = coord.y + this.height - AbstractDraggable.SCALE_BUTTON_SIZE
+        const XI = coord.x + this.width - GlobalStyles.SCALE_BUTTON_SIZE
+        const YI = coord.y + this.height - GlobalStyles.SCALE_BUTTON_SIZE
         ctx.beginPath()
-        ctx.roundRect(XI, YI, AbstractDraggable.SCALE_BUTTON_SIZE, AbstractDraggable.SCALE_BUTTON_SIZE, [0, 0, 3, 0])
-        ctx.fillStyle = state.borderColor
+        ctx.roundRect(XI, YI, GlobalStyles.SCALE_BUTTON_SIZE, GlobalStyles.SCALE_BUTTON_SIZE, [0, 0, 3, 0])
+        ctx.fillStyle = GlobalStyles.borderColor
         ctx.fill()
     }
 

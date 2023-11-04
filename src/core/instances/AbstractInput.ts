@@ -7,7 +7,7 @@ export default abstract class AbstractInput extends AbstractStateful<{
     disabled: boolean;
     visibleOnNode: boolean;
     hideLabel?: boolean;
-    colorRGBA?: [number, number, number, number];
+    colorRGBA?: ColorRGBA;
 }> implements IInput {
     hideLabel: boolean = false;
 

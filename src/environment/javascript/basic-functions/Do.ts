@@ -1,7 +1,7 @@
 import AbstractNode from "../../../core/instances/AbstractNode";
-import {NodeTypes} from "../javascript.enum";
 import NodeType from "../../../core/instances/NodeType";
 import ExecutionOutput from "../../../core/instances/ExecutionOutput";
+import {NodeTypes} from "../../../core/pscript.enum";
 
 export default class Do extends AbstractNode {
     nodeType = NodeType.of(NodeTypes.FUNCTION);

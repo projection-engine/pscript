@@ -1,23 +1,23 @@
 <script lang="ts">
     import PScript from "../../core/PScript.svelte";
-    import SideBar from "../../core/components/SideBar.svelte";
-    import PScriptRendererState from "../../core/libs/PScriptRendererState";
     import JavascriptNodes from "./javascript-nodes";
     import uuid from "uuidv4"
     import registerTypes from "./register-types";
     import {onMount} from "svelte";
-    import ActionBar from "../../core/components/ActionBar.svelte";
+    import DynamicNodes from "../../core/components/DynamicNodes.svelte";
+    import CanvasStateStore from "../../core/libs/CanvasStateStore";
+    import allTypes from "./all-types";
 
-
-    const canvas = PScriptRendererState.createState(uuid())
+    const canvas = CanvasStateStore.createState(uuid())
     onMount(registerTypes)
 </script>
-<ActionBar {canvas}/>
 <PScript
         allNodes={JavascriptNodes}
         scriptCanvas={canvas}
-/>
-<SideBar
-        allNodes={JavascriptNodes}
-        scriptCanvas={canvas}
-/>
+>
+    <DynamicNodes
+            types={Object.values(allTypes)}
+            slot="dynamic-nodes"
+            scriptCanvas={canvas}
+    />
+</PScript>

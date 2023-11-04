@@ -1,12 +1,12 @@
 import AbstractNode from "../../../core/instances/AbstractNode";
-import Types, {Colors, NodeTypes} from "../javascript.enum";
-
-import PropertyType from "../../../core/instances/PropertyType";
+import Types, {Colors} from "../javascript.enum";
 import NodeType from "../../../core/instances/NodeType";
 import Output from "../../../core/instances/Output";
 import Input from "../../../core/instances/Input";
 import ExecutionInput from "../../../core/instances/ExecutionInput";
 import ExecutionOutput from "../../../core/instances/ExecutionOutput";
+import {NodeTypes} from "../../../core/pscript.enum";
+import AllTypes from "../all-types";
 
 export default class Add extends AbstractNode {
     nodeType = NodeType.of(NodeTypes.FUNCTION);
@@ -24,9 +24,7 @@ export default class Add extends AbstractNode {
                 Input.of({
                     key: "a",
                     label: "A",
-                    accept: [
-                        PropertyType.of(Types.NUMBER)
-                    ],
+                    accept: [AllTypes[Types.NUMBER]],
                     disabled: false,
                     visibleOnNode: true,
                     colorRGBA: Colors.NUMBER
@@ -34,9 +32,7 @@ export default class Add extends AbstractNode {
                 Input.of({
                     key: "b",
                     label: "B",
-                    accept: [
-                        PropertyType.of(Types.NUMBER)
-                    ],
+                    accept: [AllTypes[Types.NUMBER]],
                     disabled: false,
                     visibleOnNode: true,
                     colorRGBA: Colors.NUMBER
@@ -47,7 +43,7 @@ export default class Add extends AbstractNode {
                 Output.of({
                     key: "sum",
                     label: "Sum",
-                    type: PropertyType.of(Types.NUMBER),
+                    type: AllTypes[Types.NUMBER],
                     disabled: false,
                     colorRGBA: Colors.NUMBER
                 })

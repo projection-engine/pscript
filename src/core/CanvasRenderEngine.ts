@@ -1,24 +1,17 @@
 import RendererUtil from "./util/RendererUtil"
-import AbstractNode from "./instances/AbstractNode"
 import type AbstractLink from "./instances/AbstractLink"
-import Comment from "./instances/Comment"
-import ActionHistory from "./libs/ActionHistory"
 import PScriptUtil from "./util/PScriptUtil";
-import PScriptRendererState from "./libs/PScriptRendererState";
-import AbstractDraggable from "./instances/AbstractDraggable";
 import IDraggableUtil from "./util/IDraggableUtil";
+import CanvasStateStore from "./libs/CanvasStateStore";
+import GlobalStyles from "./resources/GlobalStyles";
 
 export default class CanvasRenderEngine implements IRenderEngine {
     #id: string
     #initialized = false
-    //history = new ActionHistory()
     __ctx: CanvasRenderingContext2D
     __canvas: HTMLCanvasElement
-    __lastSelectionListener?: Function
-    __selectionMap = new Map<string, IDraggable>()
-    #lastSelection: IDraggable
     #frame: number;
-    __observer
+    __observer: ResizeObserver
     #state: RendererState<CanvasRenderEngine>
 
     constructor(id: string) {
@@ -27,11 +20,16 @@ export default class CanvasRenderEngine implements IRenderEngine {
     }
 
     getState(): RendererState<CanvasRenderEngine> {
-        return this.#state ?? (this.#state = PScriptRendererState.getState(this.getId()))
+        return this.#state ?? (this.#state = CanvasStateStore.getDataById(this.getId()))
     }
 
     clearState() {
         this.#state = undefined
+        CanvasStateStore.updateStore({
+            selected: new Map<string, IDraggable>(),
+            lastSelection: undefined,
+            focusedFunction: undefined
+        })
     }
 
     initialize(canvas: HTMLCanvasElement) {
@@ -59,10 +57,10 @@ export default class CanvasRenderEngine implements IRenderEngine {
 
     private findTextDimensions() {
         const state = this.getState()
-        this.__ctx.font = state.defaultFont
+        this.__ctx.font = GlobalStyles.defaultFont
         state.defaultTextSize = this.__ctx.measureText("T").width
 
-        this.__ctx.font = state.smallFont
+        this.__ctx.font = GlobalStyles.smallFont
         state.smallTextSize = this.__ctx.measureText("T").width
     }
 
@@ -80,7 +78,7 @@ export default class CanvasRenderEngine implements IRenderEngine {
     }
 
     #loop() {
-        const STATE = this.#getState()
+        const STATE = this.getState()
         if (!STATE)
             return;
         if (STATE.needsUpdate) {
@@ -103,81 +101,13 @@ export default class CanvasRenderEngine implements IRenderEngine {
         return this.#id
     }
 
-    #getState() {
-        return PScriptRendererState.getState(this.getId())
-    }
-
-    addLink(link: AbstractLink, noUpdate?: boolean) {
-        const foundExisting = this.#state.links.findIndex(l => l.input === link.input)
-        if (foundExisting > -1)
-            this.#state.links[foundExisting] = link
-        else
-            this.#state.links.push(link)
-        if (!noUpdate)
-            this.clear()
-    }
-
-    removeLink(index: number) {
-        this.#state.links.splice(index, 1)
-        this.clear()
-    }
-
-    get lastSelection() {
-        return this.#lastSelection
-    }
-
-    set lastSelection(data: IDraggable) {
-        this.#lastSelection = data
-        this.__lastSelectionListener?.()
-    }
-
-    addDraggable(node: IDraggable) {
-        // if (!noSerialization) {
-        //     this.history.save([node], true)
-        //     this.history.save([node])
-        // }
-        const state = this.getState()
-        if (node instanceof Comment) {
-            state.comments.push(node)
-        } else {
-            state.nodes.push(<AbstractNode>node)
-        }
-        this.clear()
-    }
-
-    removeDraggable(toRemove: AbstractDraggable[]) {
-        // if (!noSerialization) {
-        //     const mapped = STATE.nodes.filter(e => toRemove.includes(e.id))
-        //     this.history.save(mapped)
-        //     this.history.save(mapped, true)
-        // }
-        for (let i = 0; i < toRemove.length; i++) {
-            const draggable = toRemove[i];
-            if (draggable instanceof AbstractNode) {
-                const index = this.#state.nodes.indexOf(draggable)
-                if (index > -1) {
-                    this.#state.nodes.splice(index, 1)
-                    const toRemove = this.#state.links.filter(l => l.sourceNode === draggable || l.targetNode === draggable)
-                    toRemove.forEach(l => {
-                        this.removeLink(this.#state.links.indexOf(l))
-                    })
-                }
-            } else {
-                const index = this.#state.comments.indexOf(draggable)
-                this.#state.comments.splice(index, 1)
-            }
-        }
-        this.clear()
-    }
-
-
     clear() {
-        this.#getState().needsUpdate = true
+        this.getState().needsUpdate = true
     }
 
     #draw() {
         const ctx = this.__ctx
-        const STATE = this.#getState()
+        const STATE = this.getState()
         const links = STATE.links
         const nodes = STATE.nodes
         const comments = STATE.comments

@@ -3,16 +3,10 @@ enum Types {
     BOOLEAN = "boolean"
 }
 
-enum NodeTypes {
-    FUNCTION = "func",
-    CONST = "const",
-    VAR = "var",
-    STRUCT = "struct"
-}
 
 export default Types
 
-const Colors: { [key: string]: [number, number, number, number] } = Object.freeze({
+const Colors: { [key: string]: ColorRGBA } = Object.freeze({
     NUMBER: [59, 171, 28, 1],
     BOOLEAN: [90, 34, 139, 1],
     FUNCTION: [240, 153, 60, 1],
@@ -20,6 +14,6 @@ const Colors: { [key: string]: [number, number, number, number] } = Object.freez
     START: [255, 0, 0, 1]
 
 })
-export {Colors, NodeTypes}
+export {Colors}
 
 

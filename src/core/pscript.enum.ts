@@ -21,4 +21,11 @@ enum MaterialDataTypes {
     UNDEFINED = "-1"
 }
 
-export {MaterialDataTypes}
+enum NodeTypes {
+    FUNCTION = "func",
+    CONST = "const",
+    VAR = "var",
+    STRUCT = "struct"
+}
+
+export {MaterialDataTypes, NodeTypes}

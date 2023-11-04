@@ -1,6 +1,6 @@
 import type CanvasRenderEngine from "../CanvasRenderEngine"
 import AbstractNode from "../instances/AbstractNode"
-import Comment from "../instances/Comment"
+import CommentDraggable from "../instances/CommentDraggable"
 import ToastNotificationSystem from "../../components/alert/ToastNotificationSystem";
 import LocalizationEN from "../resources/LocalizationEN";
 import UndoRedo from "./UndoRedo";
@@ -15,7 +15,7 @@ export default class ActionHistory {
         this.#cache.history = [null]
     }
 
-    save(value: (AbstractNode | Comment)[], isRemoval?: boolean) {
+    save(value: (AbstractNode | CommentDraggable)[], isRemoval?: boolean) {
         // if (value.length === 0)
         //     return
         // const data = value.map(v => {
@@ -48,12 +48,12 @@ export default class ActionHistory {
 
     #apply(action: IAction) {
         const {toAdd, toRemove} = action
-        this.canvas.removeDraggable(toRemove, true)
+        // CanvasStateUtil.removeDraggable(this.canvas.getId(), toRemove)
         if (toAdd)
             for (let i = 0; i < toAdd.length; i++) {
                 const current = toAdd[i]
                 if (current.DATA_TYPE === "comment") {
-                    // const parsed = new Comment(current.x, current.y)
+                    // const parsed = new CommentDraggable(current.x, current.y)
                     // parsed.color = current.color
                     // parsed.name = current.name
                     // parsed.width = current.width
